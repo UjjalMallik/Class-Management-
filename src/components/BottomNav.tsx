@@ -20,8 +20,8 @@ interface BottomNavProps {
 
 export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#1e3a8a] dark:bg-[#0f172a] px-2 pb-1">
-      <div className="mx-auto flex max-w-3xl items-center justify-around h-16">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#1e3a8a] dark:bg-[#0f172a] px-1 pb-1 sm:px-2">
+      <div className="mx-auto grid max-w-3xl grid-cols-5 items-center h-16 gap-0.5">
         {tabs.map((t) => {
           const Icon = t.icon
           const isActive = activeTab === t.key
@@ -29,7 +29,7 @@ export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
             <button
               key={t.key}
               onClick={() => onTabChange(t.key)}
-              className="relative flex flex-col items-center gap-0.5 px-4 py-1"
+              className="relative flex flex-col items-center justify-center gap-0.5 px-0.5 min-[380px]:px-1 sm:px-2 py-1 min-w-0"
             >
               {isActive && (
                 <motion.div
@@ -44,7 +44,7 @@ export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
                 }`}
               />
               <span
-                className={`text-[10px] font-semibold uppercase tracking-wide relative z-10 ${
+                className={`font-semibold uppercase relative z-10 w-full text-center truncate text-[9px] tracking-tight min-[380px]:text-[10px] min-[380px]:tracking-wide sm:text-xs ${
                   isActive ? "text-[#1e3a8a] dark:text-[#0a0b10]" : "text-white/60"
                 }`}
               >
