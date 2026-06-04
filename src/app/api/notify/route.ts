@@ -1,22 +1,29 @@
-import { NextResponse } from "next/server"
+import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
-  const { title, message } = await request.json()
+  try {
+    const body = await request.json();
+    const { title, message } = body;
 
-  const res = await fetch("https://onesignal.com/api/v1/notifications", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Basic ${process.env.ONESIGNAL_REST_API_KEY}`,
-    },
-    body: JSON.stringify({
-      app_id: process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID,
-      included_segments: ["Subscribed Users", "Total Subscriptions"],
-      headings: { en: title },
-      contents: { en: message },
-    }),
-  })
+    const response = await fetch("https://onesignal.com/api/v1/notifications", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Basic os_v2_app_orssnxjnovh6jlgoustgjclzlc2xjfj3duvehrnmktxvbps3hlw2dfxvvsqqy7eiapo5nkxr2hx2n3synqb7bq5pdy2hq7yxccg7k6i"
+      },
+      body: JSON.stringify({
+        app_id: "746526dd-2d75-4fe4-acce-a4a664897958",
+        included_segments: ["All"], 
+        headings: { en: title },
+        contents: { en: message }
+      })
+    });
 
-  const data = await res.json()
-  return NextResponse.json(data, { status: res.status })
+    const data = await response.json();
+    return NextResponse.json({ success: true, data });
+    
+  } catch (error) {
+    console.error("Notification Error:", error);
+    return NextResponse.json({ success: false, error: "Failed to send notification" }, { status: 500 });
+  }
 }
