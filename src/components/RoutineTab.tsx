@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react"
 import { getSupabase } from "@/lib/supabase"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import ImageLightbox from "@/components/ImageLightbox"
-import { Loader2 } from "lucide-react"
+import { Loader2, CalendarCheck, X } from "lucide-react"
 
 const DAYS = ["Thursday", "Friday", "Saturday"]
 
@@ -21,6 +21,7 @@ export default function RoutineTab({ isAdmin }: { isAdmin: boolean }) {
   const [loading, setLoading] = useState(true)
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null)
   const [urlInputs, setUrlInputs] = useState<Record<string, string>>({})
+  const [selectedCard, setSelectedCard] = useState<{ day: string; image_url: string } | null>(null)
 
   useEffect(() => {
     fetchRoutine()
@@ -54,52 +55,67 @@ export default function RoutineTab({ isAdmin }: { isAdmin: boolean }) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {DAYS.map((day) => {
         const row = data.find((r) => r.day === day)
         return (
-          <Card key={day}>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg text-[#1e3a8a]">{day}</CardTitle>
-                <span className="rounded bg-[#facc15] px-2 py-0.5 text-xs font-bold text-[#1e3a8a]">
-                  WEEKDAY
+          <Card
+            key={day}
+            onClick={() => row?.image_url && setSelectedCard({ day, image_url: row.image_url })}
+            className={`rounded-3xl shadow-md hover:shadow-lg bg-white border border-slate-100/50 transition-all duration-300 hover:-translate-y-1 active:scale-[0.98] ${
+              row?.image_url ? "cursor-pointer" : ""
+            }`}
+          >
+            <CardContent className="p-6 space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="shrink-0 flex items-center justify-center bg-gradient-to-br from-indigo-100 to-blue-100 text-indigo-600 p-3 rounded-2xl">
+                    <CalendarCheck className="h-6 w-6" />
+                  </div>
+                  <h3 className="font-extrabold text-slate-800 text-xl tracking-tight">
+                    {day}
+                  </h3>
+                </div>
+                <span className="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase">
+                  Weekday
                 </span>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
+
               {row?.image_url ? (
-                <button
-                  onClick={() => setLightboxSrc(row.image_url)}
-                  className="w-full rounded-lg overflow-hidden border border-[#1e3a8a]/10 focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={row.image_url}
-                    alt={`${day} routine`}
-                    className="w-full h-auto object-contain"
-                  />
-                </button>
+                <div className="bg-slate-50 rounded-2xl border border-slate-200 p-2">
+                  <div className="w-full rounded-xl overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={row.image_url}
+                      alt={`${day} routine`}
+                      className="w-full h-auto object-contain rounded-xl"
+                    />
+                  </div>
+                </div>
               ) : (
-                <div className="flex items-center justify-center h-40 rounded-lg bg-[#e2e8f0] text-slate-500 text-sm">
+                <div className="flex items-center justify-center h-40 rounded-2xl bg-slate-50 border border-slate-200 text-slate-400 text-sm">
                   No routine uploaded
                 </div>
               )}
 
               {isAdmin && (
-                <div className="flex gap-2 pt-2">
+                <div
+                  className="flex gap-2 pt-2"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <Input
                     placeholder="Paste new image URL..."
                     value={urlInputs[day] || ""}
                     onChange={(e) =>
                       setUrlInputs((prev) => ({ ...prev, [day]: e.target.value }))
                     }
-                    className="flex-1 text-sm"
+                    className="flex-1 rounded-full px-4 h-11 bg-slate-50/60 border-slate-200/70 text-sm"
                   />
                   <Button
                     size="sm"
                     onClick={() => updateImage(day)}
                     disabled={!urlInputs[day]}
+                    className="rounded-full px-5 h-11"
                   >
                     Update
                   </Button>
@@ -119,6 +135,42 @@ export default function RoutineTab({ isAdmin }: { isAdmin: boolean }) {
             if (!o) setLightboxSrc(null)
           }}
         />
+      )}
+
+      {selectedCard && (
+        <div
+          onClick={() => setSelectedCard(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4 transition-opacity"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl p-6 w-full max-w-md transform transition-all scale-100 opacity-100 relative origin-center animate-fade-in-up"
+          >
+            <button
+              onClick={() => setSelectedCard(null)}
+              className="absolute top-4 right-4 h-9 w-9 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors z-10"
+              aria-label="Close"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <div className="flex items-center gap-3 mb-4 pr-10">
+              <div className="shrink-0 flex items-center justify-center bg-gradient-to-br from-indigo-100 to-blue-100 text-indigo-600 p-3 rounded-2xl">
+                <CalendarCheck className="h-6 w-6" />
+              </div>
+              <h2 className="font-extrabold text-slate-800 text-2xl tracking-tight leading-snug">
+                {selectedCard.day}
+              </h2>
+            </div>
+            <div className="bg-slate-50 rounded-2xl border border-slate-200 p-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={selectedCard.image_url}
+                alt={`${selectedCard.day} routine`}
+                className="w-full h-auto object-contain rounded-xl"
+              />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

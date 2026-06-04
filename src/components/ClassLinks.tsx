@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react"
 import { getSupabase } from "@/lib/supabase"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Loader2, ExternalLink, Plus, X, Link as LinkIcon, Trash2 } from "lucide-react"
+import { Loader2, MonitorPlay, Plus, X, Link as LinkIcon, Trash2, Clock, ExternalLink } from "lucide-react"
 import { toast } from "sonner"
 
 interface ClassLink {
@@ -75,13 +75,14 @@ export default function ClassLinks({ isAdmin }: { isAdmin: boolean }) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {isAdmin && (
         <div className="flex justify-end">
           <Button
             size="sm"
-            onClick={() => setShowForm(!showForm)}
+            onClick={() => (showForm ? resetForm() : setShowForm(true))}
             variant={showForm ? "destructive" : "default"}
+            className="rounded-full px-4 h-10"
           >
             {showForm ? (
               <>
@@ -97,24 +98,27 @@ export default function ClassLinks({ isAdmin }: { isAdmin: boolean }) {
       )}
 
       {showForm && (
-        <Card className="border-[#facc15]/40">
+        <Card className="border-[#facc15]/40 shadow-sm rounded-2xl">
           <CardContent className="pt-4 space-y-3">
             <Input
               placeholder="Class Title"
               value={className}
               onChange={(e) => setClassName(e.target.value)}
+              className="rounded-full px-4 h-11 bg-slate-50/60 border-slate-200/70"
             />
             <Input
               placeholder="Class Link (URL)"
               value={linkUrl}
               onChange={(e) => setLinkUrl(e.target.value)}
+              className="rounded-full px-4 h-11 bg-slate-50/60 border-slate-200/70"
             />
             <Input
               placeholder="Short Note"
               value={note}
               onChange={(e) => setNote(e.target.value)}
+              className="rounded-full px-4 h-11 bg-slate-50/60 border-slate-200/70"
             />
-            <Button className="w-full" onClick={handleSubmit}>
+            <Button className="w-full rounded-full h-11" onClick={handleSubmit}>
               Save / Publish
             </Button>
           </CardContent>
@@ -127,40 +131,55 @@ export default function ClassLinks({ isAdmin }: { isAdmin: boolean }) {
           <p className="text-sm">No class links yet</p>
         </div>
       ) : (
-        links.map((l) => (
-          <Card key={l.id}>
-            <CardHeader className="pb-2">
-              <div className="flex items-start justify-between gap-2">
-                <CardTitle className="text-base text-[#1e3a8a] leading-snug">
-                  {l.class_name || "Untitled"}
-                </CardTitle>
-                {isAdmin && (
-                  <button
-                    onClick={() => deleteLink(l.id)}
-                    className="text-red-400 hover:text-red-600 transition-colors shrink-0"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+        <div className="space-y-4">
+          {links.map((l) => (
+            <Card
+              key={l.id}
+              className="rounded-3xl shadow-md hover:shadow-xl bg-white border border-slate-100 transition-all duration-300 hover:-translate-y-1 active:scale-95"
+            >
+              <CardContent className="p-5 space-y-1">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3 min-w-0 flex-1">
+                    <div className="shrink-0 flex items-center justify-center bg-gradient-to-br from-indigo-100 to-blue-100 text-indigo-600 p-3 rounded-2xl">
+                      <MonitorPlay className="h-6 w-6" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-bold text-slate-800 text-xl tracking-tight leading-snug">
+                        {l.class_name || "Untitled"}
+                      </h3>
+                    </div>
+                  </div>
+                  {isAdmin && (
+                    <button
+                      onClick={() => deleteLink(l.id)}
+                      className="text-red-400 hover:text-red-600 transition-colors shrink-0 p-1"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+
+                {l.note && (
+                  <div className="text-sm text-slate-500 font-medium flex items-center gap-2 mt-2 mb-4">
+                    <Clock className="h-4 w-4 text-slate-400 shrink-0" />
+                    <span className="line-clamp-2">{l.note}</span>
+                  </div>
                 )}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {l.note && (
-                <p className="text-sm text-slate-600">{l.note}</p>
-              )}
-              {l.link_url && (
-                <a
-                  href={l.link_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-lg bg-[#1e3a8a] px-4 py-2 text-sm font-medium text-white hover:bg-[#1e3a8a]/90 transition-colors"
-                >
-                  Join Class <ExternalLink className="h-4 w-4" />
-                </a>
-              )}
-            </CardContent>
-          </Card>
-        ))
+
+                {l.link_url && (
+                  <a
+                    href={l.link_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-semibold py-3 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 mt-2"
+                  >
+                    Join Class <ExternalLink className="h-4 w-4" />
+                  </a>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       )}
     </div>
   )
