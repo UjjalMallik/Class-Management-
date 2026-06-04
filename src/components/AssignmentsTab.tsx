@@ -66,7 +66,10 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
     if (editingId === null) {
       fetch("/api/notify", {
         method: "POST",
-        body: JSON.stringify({ title: "New Assignment Added!", message: "Check out the new assignment." }),
+        body: JSON.stringify({
+          title: `নতুন অ্যাসাইনমেন্ট: ${title || "Untitled"}`,
+          message: link ? "অ্যাসাইনমেন্টের লিংক অ্যাপে যোগ হয়েছে।" : "নতুন অ্যাসাইনমেন্ট অ্যাপে যোগ হয়েছে।",
+        }),
       })
     }
   }
@@ -156,12 +159,14 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
         </div>
       ) : (
         <div className="space-y-4">
-          {assignments.map((a) => (
-            <Card
+          {assignments.map((a, i) => (
+            <div
               key={a.id}
               onClick={() => setSelectedCard(a)}
-              className="cursor-pointer rounded-3xl shadow-md hover:shadow-lg bg-white border border-slate-100/50 transition-all duration-300 hover:-translate-y-1 active:scale-[0.98]"
+              style={{ animationDelay: `${i * 60}ms` }}
+              className="animate-fade-in-up"
             >
+              <Card className="cursor-pointer rounded-3xl shadow-md hover:shadow-lg bg-white border border-slate-100/50 transition-all duration-300 hover:-translate-y-1 active:scale-[0.98]">
               <CardContent className="p-6 space-y-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start gap-3 min-w-0 flex-1">
@@ -217,6 +222,7 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
                 )}
               </CardContent>
             </Card>
+            </div>
           ))}
         </div>
       )}

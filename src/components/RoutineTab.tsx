@@ -56,16 +56,18 @@ export default function RoutineTab({ isAdmin }: { isAdmin: boolean }) {
 
   return (
     <div className="space-y-5">
-      {DAYS.map((day) => {
+      {DAYS.map((day, i) => {
         const row = data.find((r) => r.day === day)
         return (
-          <Card
+          <div
             key={day}
             onClick={() => row?.image_url && setSelectedCard({ day, image_url: row.image_url })}
-            className={`rounded-3xl shadow-md hover:shadow-lg bg-white border border-slate-100/50 transition-all duration-300 hover:-translate-y-1 active:scale-[0.98] ${
-              row?.image_url ? "cursor-pointer" : ""
-            }`}
+            style={{ animationDelay: `${i * 60}ms` }}
+            className="animate-fade-in-up"
           >
+            <Card className={`rounded-3xl shadow-md hover:shadow-lg bg-white border border-slate-100/50 transition-all duration-300 hover:-translate-y-1 active:scale-[0.98] ${
+              row?.image_url ? "cursor-pointer" : ""
+            }`}>
             <CardContent className="p-6 space-y-4">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
@@ -123,6 +125,7 @@ export default function RoutineTab({ isAdmin }: { isAdmin: boolean }) {
               )}
             </CardContent>
           </Card>
+          </div>
         )
       })}
 

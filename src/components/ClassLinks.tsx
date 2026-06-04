@@ -58,6 +58,13 @@ export default function ClassLinks({ isAdmin }: { isAdmin: boolean }) {
     resetForm()
     await fetchLinks()
     toast.success("Class link published.")
+    fetch("/api/notify", {
+      method: "POST",
+      body: JSON.stringify({
+        title: `নতুন ক্লাস লিংক: ${className || "Untitled"}`,
+        message: note || "অ্যাপে ঢুকে ক্লাসে যোগ দিন।",
+      }),
+    })
   }
 
   async function deleteLink(id: number) {
@@ -132,11 +139,13 @@ export default function ClassLinks({ isAdmin }: { isAdmin: boolean }) {
         </div>
       ) : (
         <div className="space-y-4">
-          {links.map((l) => (
-            <Card
+          {links.map((l, i) => (
+            <div
               key={l.id}
-              className="rounded-3xl shadow-md hover:shadow-xl bg-white border border-slate-100 transition-all duration-300 hover:-translate-y-1 active:scale-95"
+              style={{ animationDelay: `${i * 60}ms` }}
+              className="animate-fade-in-up"
             >
+              <Card className="rounded-3xl shadow-md hover:shadow-xl bg-white border border-slate-100 transition-all duration-300 hover:-translate-y-1 active:scale-95">
               <CardContent className="p-5 space-y-1">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start gap-3 min-w-0 flex-1">
@@ -178,6 +187,7 @@ export default function ClassLinks({ isAdmin }: { isAdmin: boolean }) {
                 )}
               </CardContent>
             </Card>
+            </div>
           ))}
         </div>
       )}

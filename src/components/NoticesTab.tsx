@@ -52,9 +52,13 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
     } else {
       if (!title || !content) return
       await getSupabase().from("notices").insert({ title, content })
+      const snippet = content.length > 120 ? `${content.slice(0, 117)}...` : content
       fetch("/api/notify", {
         method: "POST",
-        body: JSON.stringify({ title: "New Notice Published!", message: "Check out the new notice." }),
+        body: JSON.stringify({
+          title: `নতুন নোটিশ: ${title}`,
+          message: snippet,
+        }),
       })
       toast.success("Notice published successfully. Push notification sent to all students.")
     }
