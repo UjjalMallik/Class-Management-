@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme inline {
   --color-background: #ffffff;
   --color-foreground: #171717;
@@ -7,9 +9,39 @@
   --font-mono: var(--font-geist-mono);
 }
 
+:root {
+  --bg: #f1f5f9;
+  --surface: #ffffff;
+  --surface-2: #f8fafc;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --accent: #1e3a8a;
+  --accent-hover: #1e40af;
+}
+
+.dark {
+  --bg: #0a0b10;
+  --surface: #14151e;
+  --surface-2: #1c1d29;
+  --text-primary: #e5e7eb;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+  --border: #374151;
+  --accent: #14b8a6;
+  --accent-hover: #0d9488;
+}
+
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-duration: 300ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 body {
-  background: #f1f5f9;
-  color: var(--foreground);
+  background-color: var(--bg);
+  color: var(--text-primary);
   font-family: Arial, Helvetica, sans-serif;
 }
 

@@ -20,7 +20,7 @@ interface BottomNavProps {
 
 export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#1e3a8a] px-2 pb-1">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#1e3a8a] dark:bg-[#0f172a] px-2 pb-1">
       <div className="mx-auto flex max-w-3xl items-center justify-around h-16">
         {tabs.map((t) => {
           const Icon = t.icon
@@ -34,18 +34,18 @@ export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
               {isActive && (
                 <motion.div
                   layoutId="activeTabIndicator"
-                  className="absolute inset-0 rounded-xl bg-[#facc15]"
+                  className="absolute inset-0 rounded-xl bg-[#facc15] dark:bg-[#14b8a6]"
                   transition={{ type: "spring", stiffness: 500, damping: 30 }}
                 />
               )}
               <Icon
                 className={`h-5 w-5 relative z-10 ${
-                  isActive ? "text-[#1e3a8a]" : "text-white/60"
+                  isActive ? "text-[#1e3a8a] dark:text-[#0a0b10]" : "text-white/60"
                 }`}
               />
               <span
                 className={`text-[10px] font-semibold uppercase tracking-wide relative z-10 ${
-                  isActive ? "text-[#1e3a8a]" : "text-white/60"
+                  isActive ? "text-[#1e3a8a] dark:text-[#0a0b10]" : "text-white/60"
                 }`}
               >
                 {t.label}

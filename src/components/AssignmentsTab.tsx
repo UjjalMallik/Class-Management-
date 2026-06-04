@@ -91,7 +91,7 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
   if (loading) {
     return (
       <div className="flex justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-[#1e3a8a]" />
+        <Loader2 className="h-8 w-8 animate-spin text-[#1e3a8a] dark:text-[#14b8a6]" />
       </div>
     )
   }
@@ -153,7 +153,7 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
       )}
 
       {assignments.length === 0 ? (
-        <div className="text-center py-16 text-slate-500">
+        <div className="text-center py-16 text-slate-500 dark:text-[#9ca3af]">
           <FileText className="mx-auto h-10 w-10 mb-2 opacity-50" />
           <p className="text-sm">No assignments yet</p>
         </div>
@@ -166,62 +166,62 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
               style={{ animationDelay: `${i * 60}ms` }}
               className="animate-fade-in-up"
             >
-              <Card className="cursor-pointer rounded-3xl shadow-md hover:shadow-lg bg-white border border-slate-100/50 transition-all duration-300 hover:-translate-y-1 active:scale-[0.98]">
-              <CardContent className="p-6 space-y-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-3 min-w-0 flex-1">
-                    <div className="shrink-0 flex items-center justify-center bg-gradient-to-br from-indigo-100 to-blue-100 text-indigo-600 p-3 rounded-2xl">
-                      <FileText className="h-6 w-6" />
+              <Card className="cursor-pointer rounded-3xl shadow-md hover:shadow-lg bg-white dark:bg-[#14151e] border border-slate-100/50 dark:border-[#374151] transition-all duration-300 hover:-translate-y-1 active:scale-[0.98]">
+                <CardContent className="p-6 space-y-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3 min-w-0 flex-1">
+                      <div className="shrink-0 flex items-center justify-center bg-gradient-to-br from-indigo-100 to-blue-100 dark:from-[#1c1d29] dark:to-[#1c1d29] text-indigo-600 dark:text-[#14b8a6] p-3 rounded-2xl">
+                        <FileText className="h-6 w-6" />
+                      </div>
+                      <h3 className="font-extrabold text-slate-800 dark:text-[#e5e7eb] text-xl tracking-tight leading-snug">
+                        {a.title || "Untitled Assignment"}
+                      </h3>
                     </div>
-                    <h3 className="font-extrabold text-slate-800 text-xl tracking-tight leading-snug">
-                      {a.title || "Untitled Assignment"}
-                    </h3>
+                    {isAdmin && (
+                      <div
+                        className="flex items-center gap-1 shrink-0"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          onClick={() => startEdit(a)}
+                          className="text-slate-400 hover:text-[#1e3a8a] dark:hover:text-[#14b8a6] transition-colors p-1"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => deleteAssignment(a.id)}
+                          className="text-red-400 hover:text-red-600 transition-colors p-1"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  {isAdmin && (
-                    <div
-                      className="flex items-center gap-1 shrink-0"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <button
-                        onClick={() => startEdit(a)}
-                        className="text-slate-400 hover:text-[#1e3a8a] transition-colors p-1"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => deleteAssignment(a.id)}
-                        className="text-red-400 hover:text-red-600 transition-colors p-1"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+
+                  {a.image_url && a.image_url.trim() !== "" && (
+                    <div className="bg-slate-50 dark:bg-[#0a0b10] rounded-2xl border border-slate-200 dark:border-[#374151] p-2">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={a.image_url}
+                        alt={`${a.title || "assignment"} image`}
+                        className="w-full h-auto object-contain rounded-xl max-h-64"
+                      />
                     </div>
                   )}
-                </div>
 
-                {a.image_url && a.image_url.trim() !== "" && (
-                  <div className="bg-slate-50 rounded-2xl border border-slate-200 p-2">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={a.image_url}
-                      alt={`${a.title || "assignment"} image`}
-                      className="w-full h-auto object-contain rounded-xl max-h-64"
-                    />
-                  </div>
-                )}
-
-                {a.link && (
-                  <a
-                    href={a.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-semibold py-3 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
-                  >
-                    Open Assignment <ExternalLink className="h-4 w-4" />
-                  </a>
-                )}
-              </CardContent>
-            </Card>
+                  {a.link && (
+                    <a
+                      href={a.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 dark:from-[#14b8a6] dark:to-[#0d9488] hover:from-indigo-700 hover:to-blue-700 dark:hover:from-[#0d9488] dark:hover:to-[#0f766e] text-white font-semibold py-3 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                    >
+                      Open Assignment <ExternalLink className="h-4 w-4" />
+                    </a>
+                  )}
+                </CardContent>
+              </Card>
             </div>
           ))}
         </div>
@@ -230,30 +230,30 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
       {selectedCard && (
         <div
           onClick={() => setSelectedCard(null)}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4 transition-opacity"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 dark:bg-black/70 backdrop-blur-md p-4 transition-opacity"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl p-6 w-full max-w-md transform transition-all scale-100 opacity-100 relative origin-center animate-fade-in-up max-h-[85vh] overflow-y-auto"
+            className="bg-white/90 dark:bg-[#14151e]/95 backdrop-blur-xl rounded-3xl shadow-2xl p-6 w-full max-w-md transform transition-all scale-100 opacity-100 relative origin-center animate-fade-in-up max-h-[85vh] overflow-y-auto"
           >
             <button
               onClick={() => setSelectedCard(null)}
-              className="absolute top-4 right-4 h-9 w-9 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors z-10"
+              className="absolute top-4 right-4 h-9 w-9 flex items-center justify-center rounded-full bg-slate-100 dark:bg-[#1c1d29] hover:bg-slate-200 dark:hover:bg-[#374151] text-slate-600 dark:text-[#e5e7eb] transition-colors z-10"
               aria-label="Close"
             >
               <X className="h-4 w-4" />
             </button>
             <div className="flex items-center gap-3 mb-4 pr-10">
-              <div className="shrink-0 flex items-center justify-center bg-gradient-to-br from-indigo-100 to-blue-100 text-indigo-600 p-3 rounded-2xl">
+              <div className="shrink-0 flex items-center justify-center bg-gradient-to-br from-indigo-100 to-blue-100 dark:from-[#1c1d29] dark:to-[#1c1d29] text-indigo-600 dark:text-[#14b8a6] p-3 rounded-2xl">
                 <FileText className="h-6 w-6" />
               </div>
-              <h2 className="font-extrabold text-slate-800 text-2xl tracking-tight leading-snug">
+              <h2 className="font-extrabold text-slate-800 dark:text-[#e5e7eb] text-2xl tracking-tight leading-snug">
                 {selectedCard.title || "Untitled Assignment"}
               </h2>
             </div>
 
             {selectedCard.image_url && selectedCard.image_url.trim() !== "" && (
-              <div className="bg-slate-50 rounded-2xl border border-slate-200 p-2 mb-4">
+              <div className="bg-slate-50 dark:bg-[#0a0b10] rounded-2xl border border-slate-200 dark:border-[#374151] p-2 mb-4">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={selectedCard.image_url}
@@ -268,7 +268,7 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
                 href={selectedCard.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-semibold py-3 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 dark:from-[#14b8a6] dark:to-[#0d9488] hover:from-indigo-700 hover:to-blue-700 dark:hover:from-[#0d9488] dark:hover:to-[#0f766e] text-white font-semibold py-3 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
               >
                 Open Assignment <ExternalLink className="h-4 w-4" />
               </a>

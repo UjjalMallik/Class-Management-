@@ -76,7 +76,7 @@ export default function ClassLinks({ isAdmin }: { isAdmin: boolean }) {
   if (loading) {
     return (
       <div className="flex justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-[#1e3a8a]" />
+        <Loader2 className="h-8 w-8 animate-spin text-[#1e3a8a] dark:text-[#14b8a6]" />
       </div>
     )
   }
@@ -133,7 +133,7 @@ export default function ClassLinks({ isAdmin }: { isAdmin: boolean }) {
       )}
 
       {links.length === 0 ? (
-        <div className="text-center py-16 text-slate-500">
+        <div className="text-center py-16 text-slate-500 dark:text-[#9ca3af]">
           <LinkIcon className="mx-auto h-10 w-10 mb-2 opacity-50" />
           <p className="text-sm">No class links yet</p>
         </div>
@@ -145,48 +145,48 @@ export default function ClassLinks({ isAdmin }: { isAdmin: boolean }) {
               style={{ animationDelay: `${i * 60}ms` }}
               className="animate-fade-in-up"
             >
-              <Card className="rounded-3xl shadow-md hover:shadow-xl bg-white border border-slate-100 transition-all duration-300 hover:-translate-y-1 active:scale-95">
-              <CardContent className="p-5 space-y-1">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-3 min-w-0 flex-1">
-                    <div className="shrink-0 flex items-center justify-center bg-gradient-to-br from-indigo-100 to-blue-100 text-indigo-600 p-3 rounded-2xl">
-                      <MonitorPlay className="h-6 w-6" />
+              <Card className="rounded-3xl shadow-md hover:shadow-xl bg-white dark:bg-[#14151e] border border-slate-100 dark:border-[#374151] transition-all duration-300 hover:-translate-y-1 active:scale-95">
+                <CardContent className="p-5 space-y-1">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3 min-w-0 flex-1">
+                      <div className="shrink-0 flex items-center justify-center bg-gradient-to-br from-indigo-100 to-blue-100 dark:from-[#1c1d29] dark:to-[#1c1d29] text-indigo-600 dark:text-[#14b8a6] p-3 rounded-2xl">
+                        <MonitorPlay className="h-6 w-6" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-bold text-slate-800 dark:text-[#e5e7eb] text-xl tracking-tight leading-snug">
+                          {l.class_name || "Untitled"}
+                        </h3>
+                      </div>
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="font-bold text-slate-800 text-xl tracking-tight leading-snug">
-                        {l.class_name || "Untitled"}
-                      </h3>
-                    </div>
+                    {isAdmin && (
+                      <button
+                        onClick={() => deleteLink(l.id)}
+                        className="text-red-400 hover:text-red-600 transition-colors shrink-0 p-1"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
                   </div>
-                  {isAdmin && (
-                    <button
-                      onClick={() => deleteLink(l.id)}
-                      className="text-red-400 hover:text-red-600 transition-colors shrink-0 p-1"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+
+                  {l.note && (
+                    <div className="text-sm text-slate-500 dark:text-[#9ca3af] font-medium flex items-center gap-2 mt-2 mb-4">
+                      <Clock className="h-4 w-4 text-slate-400 dark:text-[#9ca3af] shrink-0" />
+                      <span className="line-clamp-2">{l.note}</span>
+                    </div>
                   )}
-                </div>
 
-                {l.note && (
-                  <div className="text-sm text-slate-500 font-medium flex items-center gap-2 mt-2 mb-4">
-                    <Clock className="h-4 w-4 text-slate-400 shrink-0" />
-                    <span className="line-clamp-2">{l.note}</span>
-                  </div>
-                )}
-
-                {l.link_url && (
-                  <a
-                    href={l.link_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-semibold py-3 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 mt-2"
-                  >
-                    Join Class <ExternalLink className="h-4 w-4" />
-                  </a>
-                )}
-              </CardContent>
-            </Card>
+                  {l.link_url && (
+                    <a
+                      href={l.link_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 dark:from-[#14b8a6] dark:to-[#0d9488] hover:from-indigo-700 hover:to-blue-700 dark:hover:from-[#0d9488] dark:hover:to-[#0f766e] text-white font-semibold py-3 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 mt-2"
+                    >
+                      Join Class <ExternalLink className="h-4 w-4" />
+                    </a>
+                  )}
+                </CardContent>
+              </Card>
             </div>
           ))}
         </div>

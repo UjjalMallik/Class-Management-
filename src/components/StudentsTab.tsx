@@ -77,7 +77,7 @@ export default function StudentsTab({ isAdmin }: { isAdmin: boolean }) {
   if (loading) {
     return (
       <div className="flex justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-[#1e3a8a]" />
+        <Loader2 className="h-8 w-8 animate-spin text-[#1e3a8a] dark:text-[#14b8a6]" />
       </div>
     )
   }
@@ -86,12 +86,12 @@ export default function StudentsTab({ isAdmin }: { isAdmin: boolean }) {
     <div className="space-y-5">
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-[#9ca3af] pointer-events-none" />
           <Input
             placeholder="Search by name or ID..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="rounded-full pl-10 pr-4 h-11 bg-white shadow-sm border-slate-200/70 focus-visible:ring-[#1e3a8a]/30 focus-visible:border-[#1e3a8a]/40"
+            className="rounded-full pl-10 pr-4 h-11 bg-white dark:bg-[#14151e] shadow-sm border-slate-200/70 dark:border-[#374151] focus-visible:ring-[#1e3a8a]/30 dark:focus-visible:ring-[#14b8a6]/40 focus-visible:border-[#1e3a8a]/40 dark:focus-visible:border-[#14b8a6]/40"
           />
         </div>
         {isAdmin && (
@@ -132,17 +132,17 @@ export default function StudentsTab({ isAdmin }: { isAdmin: boolean }) {
       )}
 
       <div className="flex items-center justify-between px-1">
-        <p className="text-sm text-slate-500">
-          <span className="font-semibold text-[#1e3a8a] text-lg">{filtered.length}</span>{" "}
+        <p className="text-sm text-slate-500 dark:text-[#9ca3af]">
+          <span className="font-semibold text-[#1e3a8a] dark:text-[#14b8a6] text-lg">{filtered.length}</span>{" "}
           student{filtered.length !== 1 ? "s" : ""}
           {search && students.length !== filtered.length && (
-            <span className="text-slate-400"> of {students.length}</span>
+            <span className="text-slate-400 dark:text-[#9ca3af]"> of {students.length}</span>
           )}
         </p>
       </div>
 
       {filtered.length === 0 ? (
-        <div className="text-center py-16 text-slate-500">
+        <div className="text-center py-16 text-slate-500 dark:text-[#9ca3af]">
           <Users className="mx-auto h-10 w-10 mb-2 opacity-50" />
           <p className="text-sm">{search ? "No students match your search" : "No students found"}</p>
         </div>
@@ -155,32 +155,32 @@ export default function StudentsTab({ isAdmin }: { isAdmin: boolean }) {
               className="animate-fade-in-up"
             >
               <Card
-                className="rounded-2xl shadow-sm border-slate-200/60 bg-white transition-all duration-300 ease-out active:scale-[0.98] hover:-translate-y-1 hover:shadow-lg group"
+                className="rounded-2xl shadow-sm border-slate-200/60 dark:border-[#374151] bg-white dark:bg-[#14151e] transition-all duration-300 ease-out active:scale-[0.98] hover:-translate-y-1 hover:shadow-lg group"
               >
                 <CardContent className="flex items-center justify-between p-4">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="flex items-center justify-center h-11 w-11 shrink-0 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-bold text-base shadow-sm transition-all duration-300 ease-out group-hover:shadow-[0_0_0_4px_rgba(99,102,241,0.25),0_0_18px_rgba(99,102,241,0.35)] group-hover:scale-105">
                       {s.name?.charAt(0).toUpperCase() || "?"}
                     </div>
-                    <span className="font-semibold text-gray-800 text-lg truncate">
+                    <span className="font-semibold text-gray-800 dark:text-[#e5e7eb] text-lg truncate">
                       {s.name}
                     </span>
                   </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold tracking-wide">
+                  <span className="bg-indigo-50 dark:bg-[#1c1d29] text-indigo-700 dark:text-[#14b8a6] px-3 py-1 rounded-full text-xs font-bold tracking-wide">
                     {s.student_id}
                   </span>
                   {isAdmin && (
                     <>
                       <button
                         onClick={() => startEdit(s)}
-                        className="text-slate-400 hover:text-[#1e3a8a] transition-colors"
+                        className="text-slate-400 hover:text-[#1e3a8a] dark:hover:text-[#14b8a6] transition-colors"
                       >
                         <Pencil className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => deleteStudent(s.id, s.name)}
-                        className="text-red-400 hover:text-red-600 transition-colors"
+                        className="text-slate-400 hover:text-red-600 transition-colors"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
