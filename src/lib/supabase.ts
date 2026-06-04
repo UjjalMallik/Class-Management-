@@ -2,6 +2,17 @@ import { createClient, SupabaseClient } from "@supabase/supabase-js"
 
 let client: SupabaseClient | null = null
 
+function disableClientCache() {
+  if (typeof window === "undefined") return
+  const w = window as unknown as { fetch: typeof fetch }
+  if ((w.fetch as unknown as { __noStorePatched?: boolean }).__noStorePatched) return
+  const originalFetch = w.fetch.bind(window)
+  w.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
+    return originalFetch(input, { cache: "no-store", ...init })
+  }) as typeof fetch
+  ;(w.fetch as unknown as { __noStorePatched?: boolean }).__noStorePatched = true
+}
+
 export function getSupabase(): SupabaseClient {
   if (client) return client
 
@@ -14,6 +25,14 @@ export function getSupabase(): SupabaseClient {
     )
   }
 
-  client = createClient(supabaseUrl, supabaseAnonKey)
+  disableClientCache()
+
+  client = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: { persistSession: true, autoRefreshToken: true },
+    global: {
+      fetch: ((input: RequestInfo | URL, init?: RequestInit) =>
+        fetch(input, { cache: "no-store", ...init })) as typeof fetch,
+    },
+  })
   return client
 }
