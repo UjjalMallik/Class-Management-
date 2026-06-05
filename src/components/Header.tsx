@@ -106,7 +106,7 @@ export default function Header({ view, onViewChange }: HeaderProps) {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#1e3a8a] dark:bg-[#0f172a] text-white shadow-lg">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-[#1e3a8a] dark:bg-[#0f172a] dark:border-b dark:border-slate-700/60 dark:shadow-sm text-white shadow-lg">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-2 sm:gap-3 px-3 sm:px-4 h-14">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -20,7 +20,7 @@ interface BottomNavProps {
 
 export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#1e3a8a] dark:bg-[#0f172a] px-1 pb-1 sm:px-2">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#1e3a8a] dark:bg-[#0f172a] dark:border-t dark:border-slate-700/60 dark:shadow-md px-1 pb-1 sm:px-2">
       <div className="mx-auto grid max-w-3xl grid-cols-5 items-center h-16 gap-0.5">
         {tabs.map((t) => {
           const Icon = t.icon
@@ -34,7 +34,7 @@ export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
               {isActive && (
                 <motion.div
                   layoutId="activeTabIndicator"
-                  className="absolute inset-0 rounded-xl bg-[#facc15] dark:bg-[#14b8a6]"
+                  className="absolute inset-0 rounded-xl bg-[#facc15] dark:bg-gradient-to-r dark:from-teal-500 dark:to-emerald-500 dark:shadow-[0_0_12px_rgba(20,184,166,0.4)]"
                   transition={{ type: "spring", stiffness: 500, damping: 30 }}
                 />
               )}

@@ -43,6 +43,15 @@ body {
   color: var(--text-primary);
 }
 
+.dark body {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, #1e293b 0%, transparent 70%),
+    radial-gradient(ellipse 60% 50% at 80% 100%, #0f172a 0%, transparent 70%),
+    #020617;
+  background-attachment: fixed;
+  min-height: 100dvh;
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;

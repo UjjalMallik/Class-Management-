@@ -145,7 +145,7 @@ export default function ClassLinks({ isAdmin }: { isAdmin: boolean }) {
               style={{ animationDelay: `${i * 60}ms` }}
               className="animate-fade-in-up"
             >
-              <Card className="rounded-3xl shadow-md hover:shadow-xl bg-white dark:bg-[#14151e] border border-slate-100 dark:border-[#374151] transition-all duration-300 hover:-translate-y-1 active:scale-95">
+              <Card className="rounded-3xl shadow-md hover:shadow-xl bg-white dark:bg-slate-900/40 dark:backdrop-blur-md border border-slate-100 dark:border-white/5 hover:dark:border-teal-500/30 hover:dark:shadow-[0_0_15px_rgba(20,184,166,0.15)] transition-all duration-300 hover:-translate-y-1 active:scale-95">
                 <CardContent className="p-5 space-y-1">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3 min-w-0 flex-1">

@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { createPortal } from "react-dom"
 import { getSupabase } from "@/lib/supabase"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -23,10 +24,29 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
   const [title, setTitle] = useState("")
   const [content, setContent] = useState("")
   const [selectedNotice, setSelectedNotice] = useState<Notice | null>(null)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true)
     fetchNotices()
   }, [])
+
+  useEffect(() => {
+    if (selectedNotice) {
+      const prevOverflow = document.body.style.overflow
+      const prevPaddingRight = document.body.style.paddingRight
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+      document.body.style.overflow = "hidden"
+      if (scrollbarWidth > 0) {
+        document.body.style.paddingRight = `${scrollbarWidth}px`
+      }
+      return () => {
+        document.body.style.overflow = prevOverflow
+        document.body.style.paddingRight = prevPaddingRight
+      }
+    }
+  }, [selectedNotice])
 
   async function fetchNotices() {
     setLoading(true)
@@ -162,7 +182,7 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
             >
               <Card
                 onClick={() => setSelectedNotice(n)}
-                className="cursor-pointer rounded-2xl shadow-md bg-white dark:bg-[#14151e] border-slate-200/60 dark:border-[#374151] border-l-4 border-l-blue-600 dark:border-l-[#14b8a6] transition-all duration-300 active:scale-[0.98] hover:-translate-y-1 hover:shadow-xl"
+                className="cursor-pointer rounded-2xl shadow-md bg-white dark:bg-slate-900/40 dark:backdrop-blur-md border-slate-200/60 dark:border-white/5 hover:dark:border-teal-500/30 hover:dark:shadow-[0_0_15px_rgba(20,184,166,0.15)] border-l-4 border-l-blue-600 dark:border-l-[#14b8a6] transition-all duration-300 active:scale-[0.98] hover:-translate-y-1 hover:shadow-xl"
               >
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-3">
@@ -209,39 +229,40 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
         </div>
       )}
 
-      {selectedNotice && (
+      {selectedNotice && mounted && createPortal(
         <div
           onClick={() => setSelectedNotice(null)}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 dark:bg-black/70 backdrop-blur-sm p-4 transition-opacity"
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white dark:bg-[#14151e] rounded-3xl shadow-2xl p-6 w-full max-w-md transform transition-all scale-100 opacity-100 relative animate-fade-in-up"
+            className="fixed top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto z-50 bg-white dark:bg-[#14151e] rounded-3xl shadow-2xl p-5 animate-fade-in-up"
           >
             <button
               onClick={() => setSelectedNotice(null)}
-              className="absolute top-4 right-4 h-9 w-9 flex items-center justify-center rounded-full bg-slate-100 dark:bg-[#1c1d29] hover:bg-slate-200 dark:hover:bg-[#374151] text-slate-600 dark:text-[#e5e7eb] transition-colors"
+              className="absolute top-3 right-3 h-8 w-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-[#1c1d29] hover:bg-slate-200 dark:hover:bg-[#374151] text-slate-600 dark:text-[#e5e7eb] transition-colors z-10"
               aria-label="Close"
             >
               <X className="h-4 w-4" />
             </button>
-            <div className="flex items-center gap-3 mb-4 pr-10">
-              <div className="shrink-0 flex items-center justify-center h-10 w-10 rounded-full bg-blue-50 dark:bg-[#1c1d29] text-blue-600 dark:text-[#14b8a6]">
-                <Megaphone className="h-5 w-5" />
+            <div className="flex items-center gap-3 mb-3 pr-10">
+              <div className="shrink-0 flex items-center justify-center h-9 w-9 rounded-full bg-blue-50 dark:bg-[#1c1d29] text-blue-600 dark:text-[#14b8a6]">
+                <Megaphone className="h-4 w-4" />
               </div>
               <span className="text-xs text-gray-400 dark:text-[#9ca3af] font-medium flex items-center gap-1">
                 <Clock className="h-3 w-3" />
                 {formatDate(selectedNotice.created_at)}
               </span>
             </div>
-            <h2 className="font-extrabold text-slate-800 dark:text-[#e5e7eb] text-2xl tracking-tight leading-snug mb-3">
+            <h2 className="font-extrabold text-slate-800 dark:text-[#e5e7eb] text-xl tracking-tight leading-snug mb-2.5">
               {selectedNotice.title}
             </h2>
             <p className="text-gray-600 dark:text-[#9ca3af] text-sm whitespace-pre-wrap leading-relaxed">
               {selectedNotice.content}
             </p>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )

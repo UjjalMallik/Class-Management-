@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { createPortal } from "react-dom"
 import { getSupabase } from "@/lib/supabase"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -24,10 +25,29 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
   const [link, setLink] = useState("")
   const [imageUrl, setImageUrl] = useState("")
   const [selectedCard, setSelectedCard] = useState<Assignment | null>(null)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true)
     fetchAssignments()
   }, [])
+
+  useEffect(() => {
+    if (selectedCard) {
+      const prevOverflow = document.body.style.overflow
+      const prevPaddingRight = document.body.style.paddingRight
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+      document.body.style.overflow = "hidden"
+      if (scrollbarWidth > 0) {
+        document.body.style.paddingRight = `${scrollbarWidth}px`
+      }
+      return () => {
+        document.body.style.overflow = prevOverflow
+        document.body.style.paddingRight = prevPaddingRight
+      }
+    }
+  }, [selectedCard])
 
   async function fetchAssignments() {
     setLoading(true)
@@ -166,7 +186,7 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
               style={{ animationDelay: `${i * 60}ms` }}
               className="animate-fade-in-up"
             >
-              <Card className="cursor-pointer rounded-3xl shadow-md hover:shadow-lg bg-white dark:bg-[#14151e] border border-slate-100/50 dark:border-[#374151] transition-all duration-300 hover:-translate-y-1 active:scale-[0.98]">
+              <Card className="cursor-pointer rounded-3xl shadow-md hover:shadow-lg bg-white dark:bg-slate-900/40 dark:backdrop-blur-md border border-slate-100/50 dark:border-white/5 hover:dark:border-teal-500/30 hover:dark:shadow-[0_0_15px_rgba(20,184,166,0.15)] transition-all duration-300 hover:-translate-y-1 active:scale-[0.98]">
                 <CardContent className="p-6 space-y-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3 min-w-0 flex-1">
@@ -227,38 +247,38 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
         </div>
       )}
 
-      {selectedCard && (
+      {selectedCard && mounted && createPortal(
         <div
           onClick={() => setSelectedCard(null)}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 dark:bg-black/70 backdrop-blur-md p-4 transition-opacity"
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white/90 dark:bg-[#14151e]/95 backdrop-blur-xl rounded-3xl shadow-2xl p-6 w-full max-w-md transform transition-all scale-100 opacity-100 relative origin-center animate-fade-in-up max-h-[85vh] overflow-y-auto"
+            className="fixed top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto z-50 bg-white/90 dark:bg-[#14151e]/95 backdrop-blur-xl rounded-3xl shadow-2xl p-5 animate-fade-in-up"
           >
             <button
               onClick={() => setSelectedCard(null)}
-              className="absolute top-4 right-4 h-9 w-9 flex items-center justify-center rounded-full bg-slate-100 dark:bg-[#1c1d29] hover:bg-slate-200 dark:hover:bg-[#374151] text-slate-600 dark:text-[#e5e7eb] transition-colors z-10"
+              className="absolute top-3 right-3 h-8 w-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-[#1c1d29] hover:bg-slate-200 dark:hover:bg-[#374151] text-slate-600 dark:text-[#e5e7eb] transition-colors z-10"
               aria-label="Close"
             >
               <X className="h-4 w-4" />
             </button>
-            <div className="flex items-center gap-3 mb-4 pr-10">
-              <div className="shrink-0 flex items-center justify-center bg-gradient-to-br from-indigo-100 to-blue-100 dark:from-[#1c1d29] dark:to-[#1c1d29] text-indigo-600 dark:text-[#14b8a6] p-3 rounded-2xl">
-                <FileText className="h-6 w-6" />
+            <div className="flex items-center gap-3 mb-3 pr-10">
+              <div className="shrink-0 flex items-center justify-center bg-gradient-to-br from-indigo-100 to-blue-100 dark:from-[#1c1d29] dark:to-[#1c1d29] text-indigo-600 dark:text-[#14b8a6] p-2.5 rounded-2xl">
+                <FileText className="h-5 w-5" />
               </div>
-              <h2 className="font-extrabold text-slate-800 dark:text-[#e5e7eb] text-2xl tracking-tight leading-snug">
+              <h2 className="font-extrabold text-slate-800 dark:text-[#e5e7eb] text-xl tracking-tight leading-snug">
                 {selectedCard.title || "Untitled Assignment"}
               </h2>
             </div>
 
             {selectedCard.image_url && selectedCard.image_url.trim() !== "" && (
-              <div className="bg-slate-50 dark:bg-[#0a0b10] rounded-2xl border border-slate-200 dark:border-[#374151] p-2 mb-4">
+              <div className="bg-slate-50 dark:bg-[#0a0b10] rounded-2xl border border-slate-200 dark:border-[#374151] p-2 mb-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={selectedCard.image_url}
                   alt={`${selectedCard.title || "assignment"} image`}
-                  className="w-full h-auto object-contain rounded-xl"
+                  className="w-full h-auto max-h-[calc(90vh-180px)] object-contain rounded-xl"
                 />
               </div>
             )}
@@ -274,7 +294,8 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
               </a>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )
