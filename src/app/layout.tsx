@@ -26,8 +26,6 @@ export default function RootLayout({
         <meta httpEquiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
         <meta httpEquiv="Pragma" content="no-cache" />
         <meta httpEquiv="Expires" content="0" />
-        <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-        <script dangerouslySetInnerHTML={{ __html: `window.OneSignalDeferred = window.OneSignalDeferred || []; window.OneSignalDeferred.push(async function(OneSignal) { await OneSignal.init({ appId: "${process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID}" }); });` }} />
       </head>
       <body className={`${inter.className} min-h-dvh`}>
         <ThemeProvider>

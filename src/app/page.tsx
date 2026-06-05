@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Header from "@/components/Header"
 import BottomNav from "@/components/BottomNav"
 import type { TabKey } from "@/components/BottomNav"
@@ -12,9 +12,22 @@ import NoticesTab from "@/components/NoticesTab"
 import PullToRefresh from "@/components/PullToRefresh"
 import VisibilityReload from "@/components/VisibilityReload"
 
+const ADMIN_STORAGE_KEY = "eub39_admin_unlocked"
+
 export default function Home() {
   const [view, setView] = useState<"admin" | "student">("student")
   const [activeTab, setActiveTab] = useState<TabKey>("routine")
+
+  useEffect(() => {
+    try {
+      if (window.localStorage.getItem(ADMIN_STORAGE_KEY) === "true") {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setView("admin")
+      }
+    } catch {
+      // ignore storage errors
+    }
+  }, [])
 
   const isAdmin = view === "admin"
 
