@@ -6,7 +6,7 @@ import { CalendarCheck, FileText, Users, Megaphone, Link } from "lucide-react"
 const tabs = [
   { key: "routine", label: "Routine", icon: CalendarCheck },
   { key: "classLinks", label: "Class Links", icon: Link },
-  { key: "assignments", label: "Assignments", icon: FileText },
+  { key: "assignments", label: "Notes", icon: FileText },
   { key: "students", label: "Students", icon: Users },
   { key: "notices", label: "Notices", icon: Megaphone },
 ] as const

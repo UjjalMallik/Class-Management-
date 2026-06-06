@@ -1,11 +1,12 @@
 "use client"
 
-import { Moon, Sun, ShieldCheck, Eye, EyeOff, X, AlertCircle } from "lucide-react"
+import { Moon, Sun, ShieldCheck, Eye, EyeOff, X, AlertCircle, Calendar, Clock } from "lucide-react"
 import { useTheme } from "next-themes"
 import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
+import LazyImage from "@/components/ui/LazyImage"
 import {
   Dialog,
   DialogPortal,
@@ -20,9 +21,25 @@ interface HeaderProps {
 
 const ADMIN_STORAGE_KEY = "eub39_admin_unlocked"
 
+function formatDate(d: Date): string {
+  const weekday = d.toLocaleDateString("en-US", { weekday: "short" })
+  const monthDay = d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+  return `${weekday}, ${monthDay}`
+}
+
+function formatTime(d: Date): string {
+  return d.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  })
+}
+
 export default function Header({ view, onViewChange }: HeaderProps) {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
+  const [now, setNow] = useState<Date | null>(null)
   const [pinModalOpen, setPinModalOpen] = useState(false)
   const [pin, setPin] = useState("")
   const [pinError, setPinError] = useState(false)
@@ -33,6 +50,13 @@ export default function Header({ view, onViewChange }: HeaderProps) {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    const update = () => setNow(new Date())
+    update()
+    const id = setInterval(update, 1000)
+    return () => clearInterval(id)
   }, [])
 
   useEffect(() => {
@@ -109,18 +133,32 @@ export default function Header({ view, onViewChange }: HeaderProps) {
       <header className="fixed top-0 left-0 right-0 z-50 bg-[#1e3a8a] dark:bg-[#0f172a] dark:border-b dark:border-slate-700/60 dark:shadow-sm text-white shadow-lg">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-2 sm:gap-3 px-3 sm:px-4 h-14">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <LazyImage
               src="https://i.ibb.co.com/FkPGmnMW/20260604-131246.jpg"
               alt="EUB 39 Batch logo"
-              className="w-9 h-9 rounded-lg object-cover shadow-sm border border-white/20 shrink-0"
+              eager
+              containerClassName="w-10 h-10 rounded-lg shadow-sm border border-white/20 shrink-0 aspect-square"
+              className="w-full h-full object-contain"
             />
-            <span className="text-base sm:text-xl font-bold tracking-tight whitespace-nowrap">
-              EUB 39 Batch
-            </span>
-            <span className="rounded bg-[#facc15]/20 dark:bg-[#facc15]/15 px-1.5 py-0.5 text-[10px] font-medium text-[#facc15] uppercase leading-none whitespace-nowrap shrink-0">
-              (CIVIL)
-            </span>
+            <div className="flex flex-col min-w-0 leading-tight">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="text-base sm:text-xl font-bold tracking-tight whitespace-nowrap">
+                  EUB 39 Batch
+                </span>
+                <span className="rounded bg-[#facc15]/20 dark:bg-[#facc15]/15 px-1.5 py-0.5 text-[10px] font-medium text-[#facc15] uppercase leading-none whitespace-nowrap shrink-0">
+                  (CIVIL)
+                </span>
+              </div>
+              {mounted && now && (
+                <div className="flex items-center gap-1.5 mt-1 whitespace-nowrap text-[10px] sm:text-[11px] text-slate-400">
+                  <Calendar className="w-3 h-3 shrink-0" />
+                  <span>{formatDate(now)}</span>
+                  <span className="opacity-40">|</span>
+                  <Clock className="w-3 h-3 shrink-0" />
+                  <span>{formatTime(now)}</span>
+                </div>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <button

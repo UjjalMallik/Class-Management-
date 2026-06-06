@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { createPortal } from "react-dom"
 import { getSupabase } from "@/lib/supabase"
 import { Card, CardContent } from "@/components/ui/card"
+import LazyImage from "@/components/ui/LazyImage"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import ImageLightbox from "@/components/ImageLightbox"
@@ -85,7 +86,7 @@ export default function RoutineTab({ isAdmin }: { isAdmin: boolean }) {
             style={{ animationDelay: `${i * 60}ms` }}
             className="animate-fade-in-up"
           >
-            <Card className={`rounded-3xl shadow-md hover:shadow-lg bg-white dark:bg-slate-900/40 dark:backdrop-blur-md border border-slate-100/50 dark:border-white/5 hover:dark:border-teal-500/30 hover:dark:shadow-[0_0_15px_rgba(20,184,166,0.15)] transition-all duration-300 hover:-translate-y-1 active:scale-[0.98] ${
+            <Card className={`rounded-2xl shadow-md dark:shadow-none border-slate-200/60 dark:border-slate-600/60 bg-white dark:bg-slate-800/60 dark:backdrop-blur-md hover:dark:border-teal-500/30 hover:dark:shadow-[0_0_15px_rgba(20,184,166,0.15)] transition-all duration-300 ease-out hover:scale-[1.02] active:scale-95 hover:shadow-lg group ${
               row?.image_url ? "cursor-pointer" : ""
             }`}>
             <CardContent className="p-6 space-y-4">
@@ -106,10 +107,10 @@ export default function RoutineTab({ isAdmin }: { isAdmin: boolean }) {
               {row?.image_url ? (
                 <div className="bg-slate-50 dark:bg-[#0a0b10] rounded-2xl border border-slate-200 dark:border-[#374151] p-2">
                   <div className="w-full rounded-xl overflow-hidden">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
+                    <LazyImage
                       src={row.image_url}
                       alt={`${day} routine`}
+                      containerClassName="w-full rounded-xl min-h-40"
                       className="w-full h-auto object-contain rounded-xl"
                     />
                   </div>
@@ -185,10 +186,11 @@ export default function RoutineTab({ isAdmin }: { isAdmin: boolean }) {
               </h2>
             </div>
             <div className="bg-slate-50 dark:bg-[#0a0b10] rounded-2xl border border-slate-200 dark:border-[#374151] p-2">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <LazyImage
                 src={selectedCard.image_url}
                 alt={`${selectedCard.day} routine`}
+                eager
+                containerClassName="w-full rounded-xl min-h-40"
                 className="w-full h-auto max-h-[calc(90vh-150px)] object-contain rounded-xl"
               />
             </div>

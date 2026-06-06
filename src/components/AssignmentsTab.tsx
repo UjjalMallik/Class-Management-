@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { createPortal } from "react-dom"
 import { getSupabase } from "@/lib/supabase"
 import { Card, CardContent } from "@/components/ui/card"
+import LazyImage from "@/components/ui/LazyImage"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Loader2, ExternalLink, Plus, X, FileText, Pencil, Trash2 } from "lucide-react"
@@ -82,13 +83,13 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
     }
     resetForm()
     await fetchAssignments()
-    toast.success(editingId !== null ? "Assignment updated." : "Assignment published.")
+      toast.success(editingId !== null ? "Note updated." : "Note published.")
     if (editingId === null) {
       fetch("/api/notify", {
         method: "POST",
         body: JSON.stringify({
-          title: `নতুন অ্যাসাইনমেন্ট: ${title || "Untitled"}`,
-          message: link ? "অ্যাসাইনমেন্টের লিংক অ্যাপে যোগ হয়েছে।" : "নতুন অ্যাসাইনমেন্ট অ্যাপে যোগ হয়েছে।",
+          title: `নতুন নোট: ${title || "Untitled"}`,
+          message: link ? "নোটের লিংক অ্যাপে যোগ হয়েছে।" : "নতুন নোট অ্যাপে যোগ হয়েছে।",
         }),
       })
     }
@@ -135,7 +136,7 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
               </>
             ) : (
               <>
-                <Plus className="h-4 w-4" /> Add Assignment
+                <Plus className="h-4 w-4" /> Add Note
               </>
             )}
           </Button>
@@ -143,10 +144,10 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
       )}
 
       {showForm && (
-        <Card className="rounded-3xl shadow-md border-[#facc15]/40 bg-white border border-slate-100/50 transition-all duration-300">
+        <Card className="rounded-2xl shadow-md dark:shadow-none border border-slate-200/60 dark:border-slate-600/60 border-l-4 border-l-[#facc15] dark:border-l-[#facc15] bg-white dark:bg-slate-800/60 dark:backdrop-blur-md transition-all duration-300">
           <CardContent className="p-6 space-y-3">
             <Input
-              placeholder="Assignment title"
+              placeholder="Note title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="rounded-full px-4 h-11 bg-slate-50/60 border-slate-200/70"
@@ -166,7 +167,7 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
               className="rounded-full px-4 h-11 bg-slate-50/60 border-slate-200/70"
             />
             <Button className="w-full rounded-full h-11" onClick={handleSubmit}>
-              {editingId !== null ? "Update" : "Publish Assignment"}
+              {editingId !== null ? "Update Note" : "Publish Note"}
             </Button>
           </CardContent>
         </Card>
@@ -175,7 +176,7 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
       {assignments.length === 0 ? (
         <div className="text-center py-16 text-slate-500 dark:text-[#9ca3af]">
           <FileText className="mx-auto h-10 w-10 mb-2 opacity-50" />
-          <p className="text-sm">No assignments yet</p>
+          <p className="text-sm">No notes yet</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -186,7 +187,7 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
               style={{ animationDelay: `${i * 60}ms` }}
               className="animate-fade-in-up"
             >
-              <Card className="cursor-pointer rounded-3xl shadow-md hover:shadow-lg bg-white dark:bg-slate-900/40 dark:backdrop-blur-md border border-slate-100/50 dark:border-white/5 hover:dark:border-teal-500/30 hover:dark:shadow-[0_0_15px_rgba(20,184,166,0.15)] transition-all duration-300 hover:-translate-y-1 active:scale-[0.98]">
+              <Card className="cursor-pointer rounded-2xl shadow-md dark:shadow-none border-slate-200/60 dark:border-slate-600/60 bg-white dark:bg-slate-800/60 dark:backdrop-blur-md hover:dark:border-teal-500/30 hover:dark:shadow-[0_0_15px_rgba(20,184,166,0.15)] transition-all duration-300 ease-out hover:scale-[1.02] active:scale-95 hover:shadow-lg group">
                 <CardContent className="p-6 space-y-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3 min-w-0 flex-1">
@@ -194,7 +195,7 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
                         <FileText className="h-6 w-6" />
                       </div>
                       <h3 className="font-extrabold text-slate-800 dark:text-[#e5e7eb] text-xl tracking-tight leading-snug">
-                        {a.title || "Untitled Assignment"}
+                        {a.title || "Untitled Note"}
                       </h3>
                     </div>
                     {isAdmin && (
@@ -220,10 +221,10 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
 
                   {a.image_url && a.image_url.trim() !== "" && (
                     <div className="bg-slate-50 dark:bg-[#0a0b10] rounded-2xl border border-slate-200 dark:border-[#374151] p-2">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
+                      <LazyImage
                         src={a.image_url}
-                        alt={`${a.title || "assignment"} image`}
+                        alt={`${a.title || "note"} image`}
+                        containerClassName="w-full rounded-xl min-h-40"
                         className="w-full h-auto object-contain rounded-xl max-h-64"
                       />
                     </div>
@@ -237,7 +238,7 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
                       onClick={(e) => e.stopPropagation()}
                       className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 dark:from-[#14b8a6] dark:to-[#0d9488] hover:from-indigo-700 hover:to-blue-700 dark:hover:from-[#0d9488] dark:hover:to-[#0f766e] text-white font-semibold py-3 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
                     >
-                      Open Assignment <ExternalLink className="h-4 w-4" />
+                      Open Note <ExternalLink className="h-4 w-4" />
                     </a>
                   )}
                 </CardContent>
@@ -268,16 +269,17 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
                 <FileText className="h-5 w-5" />
               </div>
               <h2 className="font-extrabold text-slate-800 dark:text-[#e5e7eb] text-xl tracking-tight leading-snug">
-                {selectedCard.title || "Untitled Assignment"}
+                {selectedCard.title || "Untitled Note"}
               </h2>
             </div>
 
             {selectedCard.image_url && selectedCard.image_url.trim() !== "" && (
               <div className="bg-slate-50 dark:bg-[#0a0b10] rounded-2xl border border-slate-200 dark:border-[#374151] p-2 mb-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <LazyImage
                   src={selectedCard.image_url}
-                  alt={`${selectedCard.title || "assignment"} image`}
+                  alt={`${selectedCard.title || "note"} image`}
+                  eager
+                  containerClassName="w-full rounded-xl min-h-40"
                   className="w-full h-auto max-h-[calc(90vh-180px)] object-contain rounded-xl"
                 />
               </div>
@@ -290,7 +292,7 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
                 rel="noopener noreferrer"
                 className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 dark:from-[#14b8a6] dark:to-[#0d9488] hover:from-indigo-700 hover:to-blue-700 dark:hover:from-[#0d9488] dark:hover:to-[#0f766e] text-white font-semibold py-3 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
               >
-                Open Assignment <ExternalLink className="h-4 w-4" />
+                Open Note <ExternalLink className="h-4 w-4" />
               </a>
             )}
           </div>
