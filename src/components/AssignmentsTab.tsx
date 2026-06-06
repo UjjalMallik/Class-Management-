@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { createPortal } from "react-dom"
 import { getSupabase } from "@/lib/supabase"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import LazyImage from "@/components/ui/LazyImage"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -145,7 +145,7 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
 
       {showForm && (
         <Card className="rounded-2xl shadow-md dark:shadow-none border border-slate-200/60 dark:border-slate-600/60 border-l-4 border-l-[#facc15] dark:border-l-[#facc15] bg-white dark:bg-slate-800/60 dark:backdrop-blur-md transition-all duration-300">
-          <CardContent className="p-6 space-y-3">
+          <div className="p-6 space-y-3">
             <Input
               placeholder="Note title"
               value={title}
@@ -169,7 +169,7 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
             <Button className="w-full rounded-full h-11" onClick={handleSubmit}>
               {editingId !== null ? "Update Note" : "Publish Note"}
             </Button>
-          </CardContent>
+          </div>
         </Card>
       )}
 
@@ -187,61 +187,63 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
               style={{ animationDelay: `${i * 60}ms` }}
               className="animate-fade-in-up"
             >
-              <Card className="cursor-pointer rounded-2xl shadow-md dark:shadow-none border-slate-200/60 dark:border-slate-600/60 bg-white dark:bg-slate-800/60 dark:backdrop-blur-md hover:dark:border-teal-500/30 hover:dark:shadow-[0_0_15px_rgba(20,184,166,0.15)] transition-all duration-300 ease-out hover:scale-[1.02] active:scale-95 hover:shadow-lg group">
-                <CardContent className="p-6 space-y-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3 min-w-0 flex-1">
-                      <div className="shrink-0 flex items-center justify-center bg-gradient-to-br from-indigo-100 to-blue-100 dark:from-[#1c1d29] dark:to-[#1c1d29] text-indigo-600 dark:text-[#14b8a6] p-3 rounded-2xl">
-                        <FileText className="h-6 w-6" />
-                      </div>
-                      <h3 className="font-extrabold text-slate-800 dark:text-[#e5e7eb] text-xl tracking-tight leading-snug">
-                        {a.title || "Untitled Note"}
-                      </h3>
+              <Card className="cursor-pointer bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-t-4 border-t-teal-500 rounded-2xl shadow-lg overflow-hidden transition-all duration-300 group">
+                <div className="p-6 pb-4 flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3 min-w-0 flex-1">
+                    <div className="shrink-0 flex items-center justify-center bg-gradient-to-br from-indigo-100 to-blue-100 dark:from-[#1c1d29] dark:to-[#1c1d29] text-indigo-600 dark:text-[#14b8a6] p-2.5 rounded-xl">
+                      <FileText className="h-5 w-5" />
                     </div>
-                    {isAdmin && (
-                      <div
-                        className="flex items-center gap-1 shrink-0"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <button
-                          onClick={() => startEdit(a)}
-                          className="text-slate-400 hover:text-[#1e3a8a] dark:hover:text-[#14b8a6] transition-colors p-1"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => deleteAssignment(a.id)}
-                          className="text-red-400 hover:text-red-600 transition-colors p-1"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    )}
+                    <h3 className="font-extrabold text-slate-800 dark:text-[#e5e7eb] text-xl tracking-tight leading-snug">
+                      {a.title || "Untitled Note"}
+                    </h3>
                   </div>
+                  {isAdmin && (
+                    <div
+                      className="flex items-center gap-1 shrink-0"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <button
+                        onClick={() => startEdit(a)}
+                        className="text-slate-400 hover:text-[#1e3a8a] dark:hover:text-[#14b8a6] transition-colors p-1"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => deleteAssignment(a.id)}
+                        className="text-red-400 hover:text-red-600 transition-colors p-1"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
 
-                  {a.image_url && a.image_url.trim() !== "" && (
+                {a.image_url && a.image_url.trim() !== "" && (
+                  <div className="pt-4 px-4">
                     <LazyImage
                       src={a.image_url}
                       alt={`${a.title || "note"} image`}
                       width={1200}
                       height={800}
                       sizes="(max-width: 768px) 100vw, 768px"
-                      className="w-full h-auto rounded-lg object-contain"
+                      className="w-full h-auto rounded-xl object-contain"
                     />
-                  )}
+                  </div>
+                )}
 
-                  {a.link && (
+                {a.link && (
+                  <div className="px-4 pb-6">
                     <a
                       href={a.link}
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
-                      className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 dark:from-[#14b8a6] dark:to-[#0d9488] hover:from-indigo-700 hover:to-blue-700 dark:hover:from-[#0d9488] dark:hover:to-[#0f766e] text-white font-semibold py-3 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                      className="mt-2 w-full bg-teal-500 hover:bg-teal-600 text-white font-bold text-sm py-2.5 px-5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
                     >
                       Open Note <ExternalLink className="h-4 w-4" />
                     </a>
-                  )}
-                </CardContent>
+                  </div>
+                )}
               </Card>
             </div>
           ))}
@@ -249,40 +251,44 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
       )}
 
       {selectedCard && mounted && createPortal(
-        <div
-          onClick={() => setSelectedCard(null)}
-          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
-        >
+        <>
+          <div
+            onClick={() => setSelectedCard(null)}
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md"
+          />
           <div
             onClick={(e) => e.stopPropagation()}
-            className="fixed top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto z-50 bg-white/90 dark:bg-[#14151e]/95 backdrop-blur-xl rounded-3xl shadow-2xl p-5 animate-fade-in-up"
+            className="fixed top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto z-50 bg-white dark:bg-slate-950 rounded-[2.5rem] p-6 shadow-2xl border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-200"
           >
-            <button
-              onClick={() => setSelectedCard(null)}
-              className="absolute top-3 right-3 h-8 w-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-[#1c1d29] hover:bg-slate-200 dark:hover:bg-[#374151] text-slate-600 dark:text-[#e5e7eb] transition-colors z-10"
-              aria-label="Close"
-            >
-              <X className="h-4 w-4" />
-            </button>
-            <div className="flex items-center gap-3 mb-3 pr-10">
-              <div className="shrink-0 flex items-center justify-center bg-gradient-to-br from-indigo-100 to-blue-100 dark:from-[#1c1d29] dark:to-[#1c1d29] text-indigo-600 dark:text-[#14b8a6] p-2.5 rounded-2xl">
-                <FileText className="h-5 w-5" />
+            <div className="flex items-center justify-between mb-8">
+              <div className="w-9 h-9" />
+              <div className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-teal-500" />
+                <h2 className="text-lg font-bold tracking-tight text-slate-800 dark:text-slate-100">
+                  Modules
+                </h2>
               </div>
-              <h2 className="font-extrabold text-slate-800 dark:text-[#e5e7eb] text-xl tracking-tight leading-snug">
-                {selectedCard.title || "Untitled Note"}
-              </h2>
+              <button
+                onClick={() => setSelectedCard(null)}
+                className="bg-slate-100 dark:bg-slate-800 p-2 rounded-full hover:rotate-90 transition-transform text-slate-600 dark:text-slate-300"
+                aria-label="Close"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
 
             {selectedCard.image_url && selectedCard.image_url.trim() !== "" && (
-              <LazyImage
-                src={selectedCard.image_url}
-                alt={`${selectedCard.title || "note"} image`}
-                eager
-                width={1200}
-                height={800}
-                sizes="(max-width: 768px) 90vw, 512px"
-                className="w-full h-auto rounded-lg object-contain"
-              />
+              <div className="mb-2">
+                <LazyImage
+                  src={selectedCard.image_url}
+                  alt={`${selectedCard.title || "note"} image`}
+                  eager
+                  width={1200}
+                  height={800}
+                  sizes="(max-width: 768px) 90vw, 512px"
+                  className="w-full h-auto rounded-xl object-contain"
+                />
+              </div>
             )}
 
             {selectedCard.link && (
@@ -290,13 +296,13 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
                 href={selectedCard.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 dark:from-[#14b8a6] dark:to-[#0d9488] hover:from-indigo-700 hover:to-blue-700 dark:hover:from-[#0d9488] dark:hover:to-[#0f766e] text-white font-semibold py-3 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                className="flex w-full items-center justify-center gap-2 bg-teal-500 hover:bg-teal-600 text-white font-bold text-sm py-2.5 px-5 rounded-xl transition-all shadow-md active:scale-95"
               >
                 Open Note <ExternalLink className="h-4 w-4" />
               </a>
             )}
           </div>
-        </div>,
+        </>,
         document.body
       )}
     </div>
