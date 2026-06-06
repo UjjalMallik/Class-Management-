@@ -110,6 +110,7 @@ export default function RoutineTab({ isAdmin }: { isAdmin: boolean }) {
                     <LazyImage
                       src={row.image_url}
                       alt={`${day} routine`}
+                      sizes="(max-width: 768px) 100vw, 768px"
                       containerClassName="w-full rounded-xl min-h-40"
                       className="w-full h-auto object-contain rounded-xl"
                     />
@@ -190,6 +191,7 @@ export default function RoutineTab({ isAdmin }: { isAdmin: boolean }) {
                 src={selectedCard.image_url}
                 alt={`${selectedCard.day} routine`}
                 eager
+                sizes="(max-width: 768px) 90vw, 512px"
                 containerClassName="w-full rounded-xl min-h-40"
                 className="w-full h-auto max-h-[calc(90vh-150px)] object-contain rounded-xl"
               />

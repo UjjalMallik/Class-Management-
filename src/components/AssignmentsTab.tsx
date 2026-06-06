@@ -224,6 +224,7 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
                       <LazyImage
                         src={a.image_url}
                         alt={`${a.title || "note"} image`}
+                        sizes="(max-width: 768px) 100vw, 768px"
                         containerClassName="w-full rounded-xl min-h-40"
                         className="w-full h-auto object-contain rounded-xl max-h-64"
                       />
@@ -279,6 +280,7 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
                   src={selectedCard.image_url}
                   alt={`${selectedCard.title || "note"} image`}
                   eager
+                  sizes="(max-width: 768px) 90vw, 512px"
                   containerClassName="w-full rounded-xl min-h-40"
                   className="w-full h-auto max-h-[calc(90vh-180px)] object-contain rounded-xl"
                 />

@@ -137,6 +137,8 @@ export default function Header({ view, onViewChange }: HeaderProps) {
               src="https://i.ibb.co.com/FkPGmnMW/20260604-131246.jpg"
               alt="EUB 39 Batch logo"
               eager
+              priority
+              sizes="40px"
               containerClassName="w-10 h-10 rounded-lg shadow-sm border border-white/20 shrink-0 aspect-square"
               className="w-full h-full object-contain"
             />

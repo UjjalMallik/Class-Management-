@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useState } from "react"
+import Image from "next/image"
 
 interface LazyImageProps {
   src: string
@@ -8,6 +9,9 @@ interface LazyImageProps {
   className?: string
   containerClassName?: string
   eager?: boolean
+  priority?: boolean
+  sizes?: string
+  quality?: number
 }
 
 export default function LazyImage({
@@ -16,15 +20,11 @@ export default function LazyImage({
   className = "",
   containerClassName = "",
   eager = false,
+  priority = false,
+  sizes = "100vw",
+  quality = 75,
 }: LazyImageProps) {
   const [loaded, setLoaded] = useState(false)
-  const imgRef = useRef<HTMLImageElement>(null)
-
-  useEffect(() => {
-    if (imgRef.current?.complete) {
-      setLoaded(true)
-    }
-  }, [src])
 
   return (
     <div
@@ -36,12 +36,14 @@ export default function LazyImage({
           className="absolute inset-0 bg-gradient-to-r from-slate-100 via-slate-200 to-slate-100 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 animate-pulse"
         />
       )}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        ref={imgRef}
+      <Image
         src={src}
         alt={alt}
-        loading={eager ? "eager" : "lazy"}
+        fill
+        sizes={sizes}
+        quality={quality}
+        priority={priority}
+        loading={priority || eager ? "eager" : "lazy"}
         decoding="async"
         onLoad={() => setLoaded(true)}
         onError={() => setLoaded(true)}

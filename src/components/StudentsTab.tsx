@@ -41,12 +41,14 @@ function SortableStudentCard({
   onSelect,
   onEdit,
   onDelete,
+  priority,
 }: {
   student: Student
   isAdmin: boolean
   onSelect: () => void
   onEdit: () => void
   onDelete: () => void
+  priority?: boolean
 }) {
   const {
     attributes,
@@ -93,6 +95,8 @@ function SortableStudentCard({
                 <LazyImage
                   src={student.image_url}
                   alt={student.name}
+                  priority={priority}
+                  sizes="44px"
                   containerClassName="w-full h-full rounded-full"
                   className="w-full h-full object-cover rounded-full"
                 />
@@ -385,6 +389,7 @@ export default function StudentsTab({ isAdmin }: { isAdmin: boolean }) {
                   <SortableStudentCard
                     student={s}
                     isAdmin={isAdmin}
+                    priority={i < 3}
                     onSelect={() => setSelectedStudent(s)}
                     onEdit={() => startEdit(s)}
                     onDelete={() => deleteStudent(s.id, s.name)}
@@ -413,6 +418,8 @@ export default function StudentsTab({ isAdmin }: { isAdmin: boolean }) {
                         <LazyImage
                           src={s.image_url}
                           alt={s.name}
+                          priority={i < 3}
+                          sizes="44px"
                           containerClassName="w-full h-full rounded-full"
                           className="w-full h-full object-cover rounded-full"
                         />
@@ -467,6 +474,7 @@ export default function StudentsTab({ isAdmin }: { isAdmin: boolean }) {
                         src={selectedStudent.image_url}
                         alt={selectedStudent.name}
                         eager
+                        sizes="128px"
                         containerClassName="w-32 h-32 rounded-full aspect-square"
                         className="w-32 h-32 rounded-full object-cover border-none"
                       />
