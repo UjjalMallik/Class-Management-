@@ -220,15 +220,14 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
                   </div>
 
                   {a.image_url && a.image_url.trim() !== "" && (
-                    <div className="bg-slate-50 dark:bg-[#0a0b10] rounded-2xl border border-slate-200 dark:border-[#374151] p-2">
-                      <LazyImage
-                        src={a.image_url}
-                        alt={`${a.title || "note"} image`}
-                        sizes="(max-width: 768px) 100vw, 768px"
-                        containerClassName="w-full rounded-xl min-h-40"
-                        className="w-full h-auto object-contain rounded-xl max-h-64"
-                      />
-                    </div>
+                    <LazyImage
+                      src={a.image_url}
+                      alt={`${a.title || "note"} image`}
+                      width={1200}
+                      height={800}
+                      sizes="(max-width: 768px) 100vw, 768px"
+                      className="w-full h-auto rounded-lg object-contain"
+                    />
                   )}
 
                   {a.link && (
@@ -275,16 +274,15 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
             </div>
 
             {selectedCard.image_url && selectedCard.image_url.trim() !== "" && (
-              <div className="bg-slate-50 dark:bg-[#0a0b10] rounded-2xl border border-slate-200 dark:border-[#374151] p-2 mb-3">
-                <LazyImage
-                  src={selectedCard.image_url}
-                  alt={`${selectedCard.title || "note"} image`}
-                  eager
-                  sizes="(max-width: 768px) 90vw, 512px"
-                  containerClassName="w-full rounded-xl min-h-40"
-                  className="w-full h-auto max-h-[calc(90vh-180px)] object-contain rounded-xl"
-                />
-              </div>
+              <LazyImage
+                src={selectedCard.image_url}
+                alt={`${selectedCard.title || "note"} image`}
+                eager
+                width={1200}
+                height={800}
+                sizes="(max-width: 768px) 90vw, 512px"
+                className="w-full h-auto rounded-lg object-contain"
+              />
             )}
 
             {selectedCard.link && (

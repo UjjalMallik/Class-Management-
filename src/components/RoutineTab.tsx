@@ -105,17 +105,14 @@ export default function RoutineTab({ isAdmin }: { isAdmin: boolean }) {
               </div>
 
               {row?.image_url ? (
-                <div className="bg-slate-50 dark:bg-[#0a0b10] rounded-2xl border border-slate-200 dark:border-[#374151] p-2">
-                  <div className="w-full rounded-xl overflow-hidden">
-                    <LazyImage
-                      src={row.image_url}
-                      alt={`${day} routine`}
-                      sizes="(max-width: 768px) 100vw, 768px"
-                      containerClassName="w-full rounded-xl min-h-40"
-                      className="w-full h-auto object-contain rounded-xl"
-                    />
-                  </div>
-                </div>
+                <LazyImage
+                  src={row.image_url}
+                  alt={`${day} routine`}
+                  width={1200}
+                  height={800}
+                  sizes="(max-width: 768px) 100vw, 768px"
+                  className="w-full h-auto rounded-lg object-contain"
+                />
               ) : (
                 <div className="flex items-center justify-center h-40 rounded-2xl bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#374151] text-slate-400 dark:text-[#9ca3af] text-sm">
                   No routine uploaded
@@ -186,16 +183,15 @@ export default function RoutineTab({ isAdmin }: { isAdmin: boolean }) {
                 {selectedCard.day}
               </h2>
             </div>
-            <div className="bg-slate-50 dark:bg-[#0a0b10] rounded-2xl border border-slate-200 dark:border-[#374151] p-2">
-              <LazyImage
-                src={selectedCard.image_url}
-                alt={`${selectedCard.day} routine`}
-                eager
-                sizes="(max-width: 768px) 90vw, 512px"
-                containerClassName="w-full rounded-xl min-h-40"
-                className="w-full h-auto max-h-[calc(90vh-150px)] object-contain rounded-xl"
-              />
-            </div>
+            <LazyImage
+              src={selectedCard.image_url}
+              alt={`${selectedCard.day} routine`}
+              eager
+              width={1200}
+              height={800}
+              sizes="(max-width: 768px) 90vw, 512px"
+              className="w-full h-auto rounded-lg object-contain"
+            />
           </div>
         </div>,
         document.body

@@ -12,6 +12,8 @@ interface LazyImageProps {
   priority?: boolean
   sizes?: string
   quality?: number
+  width?: number
+  height?: number
 }
 
 export default function LazyImage({
@@ -23,8 +25,11 @@ export default function LazyImage({
   priority = false,
   sizes = "100vw",
   quality = 75,
+  width,
+  height,
 }: LazyImageProps) {
   const [loaded, setLoaded] = useState(false)
+  const useIntrinsic = typeof width === "number" && typeof height === "number"
 
   return (
     <div
@@ -39,7 +44,9 @@ export default function LazyImage({
       <Image
         src={src}
         alt={alt}
-        fill
+        width={useIntrinsic ? width : undefined}
+        height={useIntrinsic ? height : undefined}
+        fill={!useIntrinsic}
         sizes={sizes}
         quality={quality}
         priority={priority}
