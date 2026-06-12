@@ -402,81 +402,86 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
           return (
             <div
               onClick={() => setSelectedNotice(null)}
-              className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+              className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
             >
               <div
                 onClick={(e) => e.stopPropagation()}
-                className="fixed top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[95vw] max-w-lg max-h-[80vh] flex flex-col z-50 bg-white dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-700/60 rounded-2xl shadow-2xl animate-fade-in-up"
+                className="fixed top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[95vw] max-w-lg max-h-[80vh] flex flex-col z-50 bg-white dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-700/60 rounded-2xl shadow-2xl overflow-hidden animate-fade-in-up"
               >
                 <div
                   className={cn(
-                    "h-1.5 w-full shrink-0",
-                    cat.dot
+                    "h-1.5 w-full shrink-0 bg-gradient-to-r",
+                    cat.dot.replace("bg-", "from-"),
+                    "to-transparent"
                   )}
                 />
-                <button
-                  onClick={() => setSelectedNotice(null)}
-                  className="absolute top-4 right-4 h-9 w-9 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors z-10"
-                  aria-label="Close"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-                <div className="overflow-y-auto overscroll-contain p-6 sm:p-7 pb-24 space-y-4">
-                  <div className="flex items-center gap-3 pr-10">
-                    <div
-                      className={cn(
-                        "shrink-0 h-12 w-12 rounded-2xl ring-1 flex items-center justify-center",
-                        cat.chip,
-                        cat.ring
-                      )}
-                    >
-                      <CatIcon className={cn("h-6 w-6", cat.accent)} strokeWidth={2.2} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <span
+                <div className="overflow-y-auto overscroll-contain thin-scroll">
+                  <div className="sticky top-0 z-10 backdrop-blur-md bg-white/90 dark:bg-slate-900/90 border-b border-slate-200/50 dark:border-slate-700/30">
+                    <div className="flex items-center gap-3 px-6 sm:px-7 pt-5 pb-4">
+                      <div
                         className={cn(
-                          "inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full",
-                          cat.chip
+                          "shrink-0 h-11 w-11 rounded-2xl ring-1 flex items-center justify-center",
+                          cat.chip,
+                          cat.ring
                         )}
                       >
-                        <span className={cn("h-1.5 w-1.5 rounded-full", cat.dot)} />
-                        {cat.label}
-                      </span>
+                        <CatIcon className={cn("h-5 w-5", cat.accent)} strokeWidth={2.2} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <span
+                          className={cn(
+                            "inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full",
+                            cat.chip
+                          )}
+                        >
+                          <span className={cn("h-1.5 w-1.5 rounded-full", cat.dot)} />
+                          {cat.label}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => setSelectedNotice(null)}
+                        className="shrink-0 h-8 w-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-300 transition-colors"
+                        aria-label="Close"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
                     </div>
                   </div>
 
-                  <h2 className="font-extrabold text-slate-900 dark:text-slate-100 text-xl sm:text-2xl tracking-tight leading-snug">
-                    {selectedNotice.title}
-                  </h2>
+                  <div className="px-6 sm:px-7 pb-24 space-y-4 pt-5">
+                    <h2 className="font-extrabold text-slate-900 dark:text-slate-100 text-xl sm:text-2xl tracking-tight leading-snug">
+                      {selectedNotice.title}
+                    </h2>
 
-                  <div className="h-px bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-700 to-transparent" />
+                    <div className="h-px bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-700 to-transparent" />
 
-                  <p className="text-sm sm:text-[15px] text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">
-                    {selectedNotice.content}
-                  </p>
+                    <p className="text-sm sm:text-[15px] text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">
+                      {selectedNotice.content}
+                    </p>
 
-                  {isAdmin && (
-                    <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-200/70 dark:border-slate-800/80">
-                      <button
-                        onClick={() => {
-                          setSelectedNotice(null)
-                          startEdit(selectedNotice)
-                        }}
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-teal-600 dark:hover:text-teal-400 px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
-                      >
-                        <Pencil className="h-3.5 w-3.5" /> Edit
-                      </button>
-                      <button
-                        onClick={() => {
-                          setSelectedNotice(null)
-                          deleteNotice(selectedNotice.id)
-                        }}
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 px-3 py-1.5 rounded-lg hover:bg-red-500/10 transition-colors"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" /> Delete
-                      </button>
-                    </div>
-                  )}
+                    {isAdmin && (
+                      <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-200/70 dark:border-slate-800/80">
+                        <button
+                          onClick={() => {
+                            setSelectedNotice(null)
+                            startEdit(selectedNotice)
+                          }}
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-teal-600 dark:hover:text-teal-400 px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
+                        >
+                          <Pencil className="h-3.5 w-3.5" /> Edit
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSelectedNotice(null)
+                            deleteNotice(selectedNotice.id)
+                          }}
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 px-3 py-1.5 rounded-lg hover:bg-red-500/10 transition-colors"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" /> Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
