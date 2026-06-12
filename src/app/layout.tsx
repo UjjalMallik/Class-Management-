@@ -29,7 +29,7 @@ export default function RootLayout({
         <meta httpEquiv="Pragma" content="no-cache" />
         <meta httpEquiv="Expires" content="0" />
       </head>
-      <body className={`${inter.className} min-h-dvh`}>
+      <body className={`${inter.className} min-h-dvh`} suppressHydrationWarning>
         <ThemeProvider>
           {children}
           <Toaster position="top-center" richColors />

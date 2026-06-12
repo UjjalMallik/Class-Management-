@@ -13,10 +13,12 @@ import PullToRefresh from "@/components/PullToRefresh"
 import VisibilityReload from "@/components/VisibilityReload"
 
 const ADMIN_STORAGE_KEY = "eub39_admin_unlocked"
+const TAB_STORAGE_KEY = "eub39_active_tab"
 
 export default function Home() {
   const [view, setView] = useState<"admin" | "student">("student")
   const [activeTab, setActiveTab] = useState<TabKey>("routine")
+  const [isHydrated, setIsHydrated] = useState(false)
 
   useEffect(() => {
     try {
@@ -28,6 +30,28 @@ export default function Home() {
       // ignore storage errors
     }
   }, [])
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(TAB_STORAGE_KEY) as TabKey | null
+      if (stored && ["routine", "classLinks", "assignments", "students", "notices"].includes(stored)) {
+        setActiveTab(stored)
+      }
+    } catch {
+      // ignore storage errors
+    }
+    setIsHydrated(true)
+  }, [])
+
+  useEffect(() => {
+    if (isHydrated) {
+      try {
+        window.localStorage.setItem(TAB_STORAGE_KEY, activeTab)
+      } catch {
+        // ignore storage errors
+      }
+    }
+  }, [activeTab, isHydrated])
 
   const isAdmin = view === "admin"
 

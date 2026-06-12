@@ -406,11 +406,11 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
             >
               <div
                 onClick={(e) => e.stopPropagation()}
-                className="fixed top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto z-50 bg-white dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-700/60 rounded-2xl shadow-2xl overflow-hidden animate-fade-in-up"
+                className="fixed top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[95vw] max-w-lg max-h-[80vh] flex flex-col z-50 bg-white dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-700/60 rounded-2xl shadow-2xl animate-fade-in-up"
               >
                 <div
                   className={cn(
-                    "h-1.5 w-full",
+                    "h-1.5 w-full shrink-0",
                     cat.dot
                   )}
                 />
@@ -421,7 +421,7 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
                 >
                   <X className="h-4 w-4" />
                 </button>
-                <div className="p-6 sm:p-7 space-y-4">
+                <div className="overflow-y-auto overscroll-contain p-6 sm:p-7 pb-24 space-y-4">
                   <div className="flex items-center gap-3 pr-10">
                     <div
                       className={cn(
