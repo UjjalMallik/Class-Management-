@@ -38,7 +38,12 @@
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+html {
+  overscroll-behavior-y: none;
+}
+
 body {
+  overscroll-behavior-y: none;
   background-color: var(--bg);
   color: var(--text-primary);
 }
