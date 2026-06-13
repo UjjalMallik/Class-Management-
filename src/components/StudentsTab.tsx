@@ -155,11 +155,41 @@ export default function StudentsTab({ isAdmin }: { isAdmin: boolean }) {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [mounted, setMounted] = useState(false)
 
+  const draftKeys = { name: "draft_student_name", studentId: "draft_student_id", imageUrl: "draft_student_image" }
+
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
     fetchStudents()
   }, [])
+
+  useEffect(() => {
+    if (!showForm || editingId !== null) return
+    try {
+      const savedName = window.localStorage.getItem(draftKeys.name)
+      const savedId = window.localStorage.getItem(draftKeys.studentId)
+      const savedImage = window.localStorage.getItem(draftKeys.imageUrl)
+      if (savedName) setName(savedName)
+      if (savedId) setStudentId(savedId)
+      if (savedImage) setImageUrl(savedImage)
+    } catch {
+      // ignore storage errors
+    }
+  }, [showForm, editingId])
+
+  useEffect(() => {
+    if (!showForm || editingId !== null) return
+    const timer = setTimeout(() => {
+      try {
+        window.localStorage.setItem(draftKeys.name, name)
+        window.localStorage.setItem(draftKeys.studentId, studentId)
+        window.localStorage.setItem(draftKeys.imageUrl, imageUrl)
+      } catch {
+        // ignore storage errors
+      }
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [name, studentId, imageUrl, showForm, editingId])
 
   useEffect(() => {
     if (selectedStudent) {
@@ -215,7 +245,16 @@ export default function StudentsTab({ isAdmin }: { isAdmin: boolean }) {
     }
   }
 
+  function clearDraft() {
+    try {
+      window.localStorage.removeItem(draftKeys.name)
+      window.localStorage.removeItem(draftKeys.studentId)
+      window.localStorage.removeItem(draftKeys.imageUrl)
+    } catch { /* ignore */ }
+  }
+
   function resetForm() {
+    clearDraft()
     setName("")
     setStudentId("")
     setImageUrl("")
@@ -266,6 +305,7 @@ export default function StudentsTab({ isAdmin }: { isAdmin: boolean }) {
       }
       toast.success(`${name} added to the class.`)
     }
+    clearDraft()
     resetForm()
     await fetchStudents()
   }

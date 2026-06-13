@@ -135,7 +135,7 @@ body {
 }
 
 .thin-scroll::-webkit-scrollbar {
-  width: 4px;
+  width: 3px;
 }
 
 .thin-scroll::-webkit-scrollbar-track {
@@ -143,10 +143,19 @@ body {
 }
 
 .thin-scroll::-webkit-scrollbar-thumb {
-  background: #94a3b8;
+  background: #cbd5e1;
   border-radius: 999px;
 }
 
 .dark .thin-scroll::-webkit-scrollbar-thumb {
-  background: #475569;
+  background: #334155;
+}
+
+.thin-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.dark .thin-scroll {
+  scrollbar-color: #334155 transparent;
 }

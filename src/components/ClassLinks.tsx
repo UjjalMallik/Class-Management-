@@ -23,9 +23,39 @@ export default function ClassLinks({ isAdmin }: { isAdmin: boolean }) {
   const [linkUrl, setLinkUrl] = useState("")
   const [note, setNote] = useState("")
 
+  const draftKeys = { className: "draft_class_name", linkUrl: "draft_class_url", note: "draft_class_note" }
+
   useEffect(() => {
     fetchLinks()
   }, [])
+
+  useEffect(() => {
+    if (!showForm) return
+    try {
+      const savedName = window.localStorage.getItem(draftKeys.className)
+      const savedUrl = window.localStorage.getItem(draftKeys.linkUrl)
+      const savedNote = window.localStorage.getItem(draftKeys.note)
+      if (savedName) setClassName(savedName)
+      if (savedUrl) setLinkUrl(savedUrl)
+      if (savedNote) setNote(savedNote)
+    } catch {
+      // ignore storage errors
+    }
+  }, [showForm])
+
+  useEffect(() => {
+    if (!showForm) return
+    const timer = setTimeout(() => {
+      try {
+        window.localStorage.setItem(draftKeys.className, className)
+        window.localStorage.setItem(draftKeys.linkUrl, linkUrl)
+        window.localStorage.setItem(draftKeys.note, note)
+      } catch {
+        // ignore storage errors
+      }
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [className, linkUrl, note, showForm])
 
   async function fetchLinks() {
     setLoading(true)
@@ -37,7 +67,16 @@ export default function ClassLinks({ isAdmin }: { isAdmin: boolean }) {
     setLoading(false)
   }
 
+  function clearDraft() {
+    try {
+      window.localStorage.removeItem(draftKeys.className)
+      window.localStorage.removeItem(draftKeys.linkUrl)
+      window.localStorage.removeItem(draftKeys.note)
+    } catch { /* ignore */ }
+  }
+
   function resetForm() {
+    clearDraft()
     setClassName("")
     setLinkUrl("")
     setNote("")
@@ -55,6 +94,7 @@ export default function ClassLinks({ isAdmin }: { isAdmin: boolean }) {
       toast.error(error.message)
       return
     }
+    clearDraft()
     resetForm()
     await fetchLinks()
     toast.success("Class link published.")

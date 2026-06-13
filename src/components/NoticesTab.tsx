@@ -156,11 +156,38 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
   const [selectedNotice, setSelectedNotice] = useState<Notice | null>(null)
   const [mounted, setMounted] = useState(false)
 
+  const draftKeys = { title: "draft_notice_title", content: "draft_notice_content" }
+
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
     fetchNotices()
   }, [])
+
+  useEffect(() => {
+    if (!showForm || editingId !== null) return
+    try {
+      const savedTitle = window.localStorage.getItem(draftKeys.title)
+      const savedContent = window.localStorage.getItem(draftKeys.content)
+      if (savedTitle) setTitle(savedTitle)
+      if (savedContent) setContent(savedContent)
+    } catch {
+      // ignore storage errors
+    }
+  }, [showForm, editingId])
+
+  useEffect(() => {
+    if (!showForm || editingId !== null) return
+    const timer = setTimeout(() => {
+      try {
+        window.localStorage.setItem(draftKeys.title, title)
+        window.localStorage.setItem(draftKeys.content, content)
+      } catch {
+        // ignore storage errors
+      }
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [title, content, showForm, editingId])
 
   useEffect(() => {
     if (selectedNotice) {
@@ -188,7 +215,15 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
     setLoading(false)
   }
 
+  function clearDraft() {
+    try {
+      window.localStorage.removeItem(draftKeys.title)
+      window.localStorage.removeItem(draftKeys.content)
+    } catch { /* ignore */ }
+  }
+
   function resetForm() {
+    clearDraft()
     setTitle("")
     setContent("")
     setEditingId(null)
@@ -212,6 +247,7 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
       })
       toast.success("Notice published. Push notification sent to all students.")
     }
+    clearDraft()
     resetForm()
     await fetchNotices()
   }
@@ -406,18 +442,27 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
             >
               <div
                 onClick={(e) => e.stopPropagation()}
-                className="fixed top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[95vw] max-w-lg max-h-[80vh] flex flex-col z-50 bg-white dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-700/60 rounded-2xl shadow-2xl overflow-hidden animate-fade-in-up"
+                className="fixed top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[95vw] max-w-lg max-h-[85vh] z-50 bg-white dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-700/60 rounded-2xl shadow-2xl overflow-hidden animate-fade-in-up"
               >
                 <div
                   className={cn(
-                    "h-1.5 w-full shrink-0 bg-gradient-to-r",
+                    "h-1.5 w-full bg-gradient-to-r",
                     cat.dot.replace("bg-", "from-"),
                     "to-transparent"
                   )}
                 />
-                <div className="overflow-y-auto overscroll-contain thin-scroll">
+
+                <button
+                  onClick={() => setSelectedNotice(null)}
+                  className="absolute top-3 right-3 z-20 h-8 w-8 flex items-center justify-center rounded-full bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-300 backdrop-blur-sm transition-colors"
+                  aria-label="Close"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+
+                <div className="overflow-y-auto overscroll-contain thin-scroll max-h-[85vh]">
                   <div className="sticky top-0 z-10 backdrop-blur-md bg-white/90 dark:bg-slate-900/90 border-b border-slate-200/50 dark:border-slate-700/30">
-                    <div className="flex items-center gap-3 px-6 sm:px-7 pt-5 pb-4">
+                    <div className="flex items-center gap-3 px-6 sm:px-7 pt-5 pb-4 pr-14">
                       <div
                         className={cn(
                           "shrink-0 h-11 w-11 rounded-2xl ring-1 flex items-center justify-center",
@@ -438,18 +483,11 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
                           {cat.label}
                         </span>
                       </div>
-                      <button
-                        onClick={() => setSelectedNotice(null)}
-                        className="shrink-0 h-8 w-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-300 transition-colors"
-                        aria-label="Close"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
                     </div>
                   </div>
 
-                  <div className="px-6 sm:px-7 pb-24 space-y-4 pt-5">
-                    <h2 className="font-extrabold text-slate-900 dark:text-slate-100 text-xl sm:text-2xl tracking-tight leading-snug">
+                  <div className="px-6 sm:px-7 pb-6 space-y-4 pt-5">
+                    <h2 className="font-extrabold text-slate-900 dark:text-slate-100 text-xl sm:text-2xl tracking-tight leading-snug pr-2">
                       {selectedNotice.title}
                     </h2>
 

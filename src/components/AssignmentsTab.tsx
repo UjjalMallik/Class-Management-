@@ -28,11 +28,41 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
   const [selectedCard, setSelectedCard] = useState<Assignment | null>(null)
   const [mounted, setMounted] = useState(false)
 
+  const draftKeys = { title: "draft_note_title", link: "draft_note_link", imageUrl: "draft_note_image" }
+
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
     fetchAssignments()
   }, [])
+
+  useEffect(() => {
+    if (!showForm || editingId !== null) return
+    try {
+      const savedTitle = window.localStorage.getItem(draftKeys.title)
+      const savedLink = window.localStorage.getItem(draftKeys.link)
+      const savedImage = window.localStorage.getItem(draftKeys.imageUrl)
+      if (savedTitle) setTitle(savedTitle)
+      if (savedLink) setLink(savedLink)
+      if (savedImage) setImageUrl(savedImage)
+    } catch {
+      // ignore storage errors
+    }
+  }, [showForm, editingId])
+
+  useEffect(() => {
+    if (!showForm || editingId !== null) return
+    const timer = setTimeout(() => {
+      try {
+        window.localStorage.setItem(draftKeys.title, title)
+        window.localStorage.setItem(draftKeys.link, link)
+        window.localStorage.setItem(draftKeys.imageUrl, imageUrl)
+      } catch {
+        // ignore storage errors
+      }
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [title, link, imageUrl, showForm, editingId])
 
   useEffect(() => {
     if (selectedCard) {
@@ -60,7 +90,16 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
     setLoading(false)
   }
 
+  function clearDraft() {
+    try {
+      window.localStorage.removeItem(draftKeys.title)
+      window.localStorage.removeItem(draftKeys.link)
+      window.localStorage.removeItem(draftKeys.imageUrl)
+    } catch { /* ignore */ }
+  }
+
   function resetForm() {
+    clearDraft()
     setTitle("")
     setLink("")
     setImageUrl("")
@@ -81,6 +120,7 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
       toast.error(error.message)
       return
     }
+    clearDraft()
     resetForm()
     await fetchAssignments()
       toast.success(editingId !== null ? "Note updated." : "Note published.")
