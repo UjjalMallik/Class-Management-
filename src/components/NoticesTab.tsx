@@ -156,6 +156,7 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
   const [content, setContent] = useState("")
   const [imageUrl, setImageUrl] = useState("")
   const [selectedNotice, setSelectedNotice] = useState<Notice | null>(null)
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
 
   const draftKeys = { title: "draft_notice_title", content: "draft_notice_content", imageUrl: "draft_notice_image" }
@@ -442,7 +443,8 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
                       <img
                         src={n.image_url}
                         alt=""
-                        className="w-full max-h-[300px] object-cover rounded-xl mt-2"
+                        onClick={(e) => { e.stopPropagation(); setSelectedImage(n.image_url!) }}
+                        className="w-full max-h-[300px] object-cover rounded-xl mt-2 cursor-pointer"
                       />
                     )}
                   </CardContent>
@@ -451,6 +453,28 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
             )
           })}
         </div>
+      )}
+
+      {selectedImage && mounted && createPortal(
+        <div
+          onClick={() => setSelectedImage(null)}
+          className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center animate-fade-in-up"
+        >
+          <button
+            onClick={() => setSelectedImage(null)}
+            className="absolute top-4 right-4 z-[70] h-10 w-10 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 text-white backdrop-blur-md transition-colors"
+            aria-label="Close image"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <img
+            src={selectedImage}
+            alt=""
+            onClick={(e) => e.stopPropagation()}
+            className="max-w-[95vw] max-h-[95vh] object-contain rounded-lg shadow-2xl"
+          />
+        </div>,
+        document.body
       )}
 
       {selectedNotice && mounted && createPortal(
@@ -523,7 +547,8 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
                       <img
                         src={selectedNotice.image_url}
                         alt=""
-                        className="w-full max-h-[300px] object-cover rounded-xl"
+                        onClick={() => setSelectedImage(selectedNotice.image_url!)}
+                        className="w-full max-h-[300px] object-cover rounded-xl cursor-pointer"
                       />
                     )}
 
