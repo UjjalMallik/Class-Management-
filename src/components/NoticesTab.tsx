@@ -29,6 +29,7 @@ interface Notice {
   id: number
   title: string
   content: string
+  image_url?: string | null
   created_at: string
 }
 
@@ -153,10 +154,11 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
   const [editingId, setEditingId] = useState<number | null>(null)
   const [title, setTitle] = useState("")
   const [content, setContent] = useState("")
+  const [imageUrl, setImageUrl] = useState("")
   const [selectedNotice, setSelectedNotice] = useState<Notice | null>(null)
   const [mounted, setMounted] = useState(false)
 
-  const draftKeys = { title: "draft_notice_title", content: "draft_notice_content" }
+  const draftKeys = { title: "draft_notice_title", content: "draft_notice_content", imageUrl: "draft_notice_image" }
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -169,8 +171,10 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
     try {
       const savedTitle = window.localStorage.getItem(draftKeys.title)
       const savedContent = window.localStorage.getItem(draftKeys.content)
+      const savedImage = window.localStorage.getItem(draftKeys.imageUrl)
       if (savedTitle) setTitle(savedTitle)
       if (savedContent) setContent(savedContent)
+      if (savedImage) setImageUrl(savedImage)
     } catch {
       // ignore storage errors
     }
@@ -182,12 +186,13 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
       try {
         window.localStorage.setItem(draftKeys.title, title)
         window.localStorage.setItem(draftKeys.content, content)
+        window.localStorage.setItem(draftKeys.imageUrl, imageUrl)
       } catch {
         // ignore storage errors
       }
     }, 500)
     return () => clearTimeout(timer)
-  }, [title, content, showForm, editingId])
+  }, [title, content, imageUrl, showForm, editingId])
 
   useEffect(() => {
     if (selectedNotice) {
@@ -219,6 +224,7 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
     try {
       window.localStorage.removeItem(draftKeys.title)
       window.localStorage.removeItem(draftKeys.content)
+      window.localStorage.removeItem(draftKeys.imageUrl)
     } catch { /* ignore */ }
   }
 
@@ -226,17 +232,18 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
     clearDraft()
     setTitle("")
     setContent("")
+    setImageUrl("")
     setEditingId(null)
     setShowForm(false)
   }
 
   async function handleSubmit() {
     if (editingId !== null) {
-      await getSupabase().from("notices").update({ title, content }).eq("id", editingId)
+      await getSupabase().from("notices").update({ title, content, image_url: imageUrl || null }).eq("id", editingId)
       toast.success("Notice updated.")
     } else {
       if (!title || !content) return
-      await getSupabase().from("notices").insert({ title, content })
+      await getSupabase().from("notices").insert({ title, content, image_url: imageUrl || null })
       const snippet = content.length > 120 ? `${content.slice(0, 117)}...` : content
       fetch("/api/notify", {
         method: "POST",
@@ -255,6 +262,7 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
   function startEdit(n: Notice) {
     setTitle(n.title)
     setContent(n.content)
+    setImageUrl(n.image_url || "")
     setEditingId(n.id)
     setShowForm(true)
   }
@@ -328,6 +336,12 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
               onChange={(e) => setContent(e.target.value)}
               rows={4}
               className="flex w-full rounded-2xl border border-slate-200/70 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-900/40 px-4 py-3 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1e3a8a] dark:focus-visible:ring-[#14b8a6] resize-none text-slate-800 dark:text-slate-100"
+            />
+            <Input
+              placeholder="Image URL (Optional)"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              className="rounded-full px-4 h-11 bg-slate-50/60 dark:bg-slate-900/40 border-slate-200/70 dark:border-slate-700"
             />
             <Button className="w-full rounded-full h-11" onClick={handleSubmit} disabled={editingId === null && (!title || !content)}>
               {editingId !== null ? "Update Notice" : "Publish Notice"}
@@ -423,6 +437,14 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
                     <p className="text-sm leading-relaxed line-clamp-3 text-slate-600 dark:text-slate-300/85">
                       {n.content}
                     </p>
+
+                    {n.image_url && (
+                      <img
+                        src={n.image_url}
+                        alt=""
+                        className="w-full max-h-[300px] object-cover rounded-xl mt-2"
+                      />
+                    )}
                   </CardContent>
                 </Card>
               </div>
@@ -496,6 +518,14 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
                     <p className="text-sm sm:text-[15px] text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">
                       {selectedNotice.content}
                     </p>
+
+                    {selectedNotice.image_url && (
+                      <img
+                        src={selectedNotice.image_url}
+                        alt=""
+                        className="w-full max-h-[300px] object-cover rounded-xl"
+                      />
+                    )}
 
                     {isAdmin && (
                       <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-200/70 dark:border-slate-800/80">
