@@ -14,7 +14,8 @@ interface Assignment {
   id: number
   title: string
   link: string
-  image_url: string | null
+  image_urls?: string[] | null
+  image_url?: string | null
 }
 
 export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
@@ -24,11 +25,12 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
   const [editingId, setEditingId] = useState<number | null>(null)
   const [title, setTitle] = useState("")
   const [link, setLink] = useState("")
-  const [imageUrl, setImageUrl] = useState("")
+  const [imageUrls, setImageUrls] = useState<string[]>([""])
   const [selectedCard, setSelectedCard] = useState<Assignment | null>(null)
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
 
-  const draftKeys = { title: "draft_note_title", link: "draft_note_link", imageUrl: "draft_note_image" }
+  const draftKeys = { title: "draft_note_title", link: "draft_note_link", imageUrls: "draft_note_images" }
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -41,10 +43,10 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
     try {
       const savedTitle = window.localStorage.getItem(draftKeys.title)
       const savedLink = window.localStorage.getItem(draftKeys.link)
-      const savedImage = window.localStorage.getItem(draftKeys.imageUrl)
+      const savedImages = window.localStorage.getItem(draftKeys.imageUrls)
       if (savedTitle) setTitle(savedTitle)
       if (savedLink) setLink(savedLink)
-      if (savedImage) setImageUrl(savedImage)
+      if (savedImages) try { setImageUrls(JSON.parse(savedImages)) } catch { /* ignore */ }
     } catch {
       // ignore storage errors
     }
@@ -56,13 +58,13 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
       try {
         window.localStorage.setItem(draftKeys.title, title)
         window.localStorage.setItem(draftKeys.link, link)
-        window.localStorage.setItem(draftKeys.imageUrl, imageUrl)
+        window.localStorage.setItem(draftKeys.imageUrls, JSON.stringify(imageUrls))
       } catch {
         // ignore storage errors
       }
     }, 500)
     return () => clearTimeout(timer)
-  }, [title, link, imageUrl, showForm, editingId])
+  }, [title, link, imageUrls, showForm, editingId])
 
   useEffect(() => {
     if (selectedCard) {
@@ -94,7 +96,7 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
     try {
       window.localStorage.removeItem(draftKeys.title)
       window.localStorage.removeItem(draftKeys.link)
-      window.localStorage.removeItem(draftKeys.imageUrl)
+      window.localStorage.removeItem(draftKeys.imageUrls)
     } catch { /* ignore */ }
   }
 
@@ -102,16 +104,17 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
     clearDraft()
     setTitle("")
     setLink("")
-    setImageUrl("")
+    setImageUrls([""])
     setEditingId(null)
     setShowForm(false)
   }
 
   async function handleSubmit() {
+    const urls = imageUrls.filter((u) => u.trim() !== "")
     const payload = {
       title: title ? title : null,
       link: link ? link : null,
-      image_url: imageUrl ? imageUrl : null,
+      image_urls: urls.length ? urls : null,
     }
     const { error } = editingId !== null
       ? await getSupabase().from("assignments").update(payload).eq("id", editingId)
@@ -138,7 +141,13 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
   function startEdit(a: Assignment) {
     setTitle(a.title || "")
     setLink(a.link || "")
-    setImageUrl(a.image_url || "")
+    if (Array.isArray(a.image_urls) && a.image_urls.length > 0) {
+      setImageUrls([...a.image_urls, ""])
+    } else if (a.image_url && a.image_url.trim() !== "") {
+      setImageUrls([a.image_url, ""])
+    } else {
+      setImageUrls([""])
+    }
     setEditingId(a.id)
     setShowForm(true)
   }
@@ -199,13 +208,33 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
               onChange={(e) => setLink(e.target.value)}
               className="rounded-full px-4 h-11 bg-slate-50/60 border-slate-200/70"
             />
-            <Input
-              type="text"
-              placeholder="Image URL (Optional)"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              className="rounded-full px-4 h-11 bg-slate-50/60 border-slate-200/70"
-            />
+            <div className="space-y-2">
+              {imageUrls.map((url, idx) => (
+                <div key={idx} className="flex items-center gap-2">
+                  <Input
+                    type="text"
+                    placeholder={`Image URL ${idx + 1}`}
+                    value={url}
+                    onChange={(e) => {
+                      const next = [...imageUrls]
+                      next[idx] = e.target.value
+                      if (idx === imageUrls.length - 1 && e.target.value) next.push("")
+                      setImageUrls(next)
+                    }}
+                    className="rounded-full px-4 h-11 bg-slate-50/60 border-slate-200/70 flex-1"
+                  />
+                  {idx > 0 && (
+                    <button
+                      onClick={() => setImageUrls(imageUrls.filter((_, i) => i !== idx))}
+                      className="shrink-0 h-9 w-9 flex items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30 text-red-500 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
+                      aria-label="Remove image"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
             <Button className="w-full rounded-full h-11" onClick={handleSubmit}>
               {editingId !== null ? "Update Note" : "Publish Note"}
             </Button>
@@ -258,18 +287,36 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
                   )}
                 </div>
 
-                {a.image_url && a.image_url.trim() !== "" && (
-                  <div className="pt-4 px-4">
-                    <LazyImage
-                      src={a.image_url}
-                      alt={`${a.title || "note"} image`}
-                      width={1200}
-                      height={800}
-                      sizes="(max-width: 768px) 100vw, 768px"
-                      className="w-full h-auto rounded-xl object-contain"
-                    />
-                  </div>
-                )}
+                {(Array.isArray(a.image_urls) && a.image_urls.length > 0) || (a.image_url && a.image_url.trim() !== "") ? (() => {
+                  const urls = Array.isArray(a.image_urls) && a.image_urls.length > 0
+                    ? a.image_urls
+                    : a.image_url
+                    ? [a.image_url]
+                    : []
+                  if (urls.length === 1) {
+                    return (
+                      <img
+                        src={urls[0]}
+                        alt=""
+                        onClick={(e) => { e.stopPropagation(); setSelectedImage(urls[0]) }}
+                        className="w-full max-h-[280px] object-cover rounded-xl mt-3 mx-auto block border border-white/5 cursor-pointer"
+                      />
+                    )
+                  }
+                  return (
+                    <div className="flex flex-wrap justify-center gap-3 mt-3 mx-auto">
+                      {urls.map((url, idx) => (
+                        <img
+                          key={idx}
+                          src={url}
+                          alt=""
+                          onClick={(e) => { e.stopPropagation(); setSelectedImage(url) }}
+                          className="w-[110px] h-[110px] object-cover rounded-xl border border-white/10 shadow-lg cursor-pointer transition-all duration-300 ease hover:scale-105 hover:opacity-90"
+                        />
+                      ))}
+                    </div>
+                  )
+                })() : null}
 
                 {a.link && (
                   <div className="px-4 pb-6">
@@ -317,19 +364,28 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
               </button>
             </div>
 
-            {selectedCard.image_url && selectedCard.image_url.trim() !== "" && (
-              <div className="mb-2">
-                <LazyImage
-                  src={selectedCard.image_url}
-                  alt={`${selectedCard.title || "note"} image`}
-                  eager
-                  width={1200}
-                  height={800}
-                  sizes="(max-width: 768px) 90vw, 512px"
-                  className="w-full h-auto rounded-xl object-contain"
-                />
+            {(Array.isArray(selectedCard.image_urls) && selectedCard.image_urls.length > 0) || (selectedCard.image_url && selectedCard.image_url.trim() !== "") ? (
+              <div className="flex flex-col gap-3 mb-2">
+                {Array.isArray(selectedCard.image_urls) && selectedCard.image_urls.length > 0
+                  ? selectedCard.image_urls.map((url, idx) => (
+                      <img
+                        key={idx}
+                        src={url}
+                        alt=""
+                        onClick={() => setSelectedImage(url)}
+                        className="w-full max-h-[400px] object-contain rounded-xl cursor-pointer"
+                      />
+                    ))
+                  : selectedCard.image_url && (
+                      <img
+                        src={selectedCard.image_url}
+                        alt=""
+                        onClick={() => setSelectedImage(selectedCard.image_url!)}
+                        className="w-full max-h-[400px] object-contain rounded-xl cursor-pointer"
+                      />
+                    )}
               </div>
-            )}
+            ) : null}
 
             {selectedCard.link && (
               <a
@@ -343,6 +399,28 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
             )}
           </div>
         </>,
+        document.body
+      )}
+
+      {selectedImage && mounted && createPortal(
+        <div
+          onClick={() => setSelectedImage(null)}
+          className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center animate-fade-in-up"
+        >
+          <button
+            onClick={() => setSelectedImage(null)}
+            className="absolute top-4 right-4 z-[70] h-10 w-10 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 text-white backdrop-blur-md transition-colors"
+            aria-label="Close image"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <img
+            src={selectedImage}
+            alt=""
+            onClick={(e) => e.stopPropagation()}
+            className="max-w-[95vw] max-h-[95vh] object-contain rounded-lg shadow-2xl"
+          />
+        </div>,
         document.body
       )}
     </div>

@@ -29,6 +29,7 @@ interface Notice {
   id: number
   title: string
   content: string
+  image_urls?: string[] | null
   image_url?: string | null
   created_at: string
 }
@@ -154,12 +155,12 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
   const [editingId, setEditingId] = useState<number | null>(null)
   const [title, setTitle] = useState("")
   const [content, setContent] = useState("")
-  const [imageUrl, setImageUrl] = useState("")
+  const [imageUrls, setImageUrls] = useState<string[]>([""])
   const [selectedNotice, setSelectedNotice] = useState<Notice | null>(null)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
 
-  const draftKeys = { title: "draft_notice_title", content: "draft_notice_content", imageUrl: "draft_notice_image" }
+  const draftKeys = { title: "draft_notice_title", content: "draft_notice_content", imageUrls: "draft_notice_images" }
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -172,10 +173,10 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
     try {
       const savedTitle = window.localStorage.getItem(draftKeys.title)
       const savedContent = window.localStorage.getItem(draftKeys.content)
-      const savedImage = window.localStorage.getItem(draftKeys.imageUrl)
+      const savedImages = window.localStorage.getItem(draftKeys.imageUrls)
       if (savedTitle) setTitle(savedTitle)
       if (savedContent) setContent(savedContent)
-      if (savedImage) setImageUrl(savedImage)
+      if (savedImages) try { setImageUrls(JSON.parse(savedImages)) } catch { /* ignore */ }
     } catch {
       // ignore storage errors
     }
@@ -187,13 +188,13 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
       try {
         window.localStorage.setItem(draftKeys.title, title)
         window.localStorage.setItem(draftKeys.content, content)
-        window.localStorage.setItem(draftKeys.imageUrl, imageUrl)
+        window.localStorage.setItem(draftKeys.imageUrls, JSON.stringify(imageUrls))
       } catch {
         // ignore storage errors
       }
     }, 500)
     return () => clearTimeout(timer)
-  }, [title, content, imageUrl, showForm, editingId])
+  }, [title, content, imageUrls, showForm, editingId])
 
   useEffect(() => {
     if (selectedNotice) {
@@ -225,7 +226,7 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
     try {
       window.localStorage.removeItem(draftKeys.title)
       window.localStorage.removeItem(draftKeys.content)
-      window.localStorage.removeItem(draftKeys.imageUrl)
+      window.localStorage.removeItem(draftKeys.imageUrls)
     } catch { /* ignore */ }
   }
 
@@ -233,18 +234,19 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
     clearDraft()
     setTitle("")
     setContent("")
-    setImageUrl("")
+    setImageUrls([""])
     setEditingId(null)
     setShowForm(false)
   }
 
   async function handleSubmit() {
+    const urls = imageUrls.filter((u) => u.trim() !== "")
     if (editingId !== null) {
-      await getSupabase().from("notices").update({ title, content, image_url: imageUrl || null }).eq("id", editingId)
+      await getSupabase().from("notices").update({ title, content, image_urls: urls.length ? urls : null }).eq("id", editingId)
       toast.success("Notice updated.")
     } else {
       if (!title || !content) return
-      await getSupabase().from("notices").insert({ title, content, image_url: imageUrl || null })
+      await getSupabase().from("notices").insert({ title, content, image_urls: urls.length ? urls : null })
       const snippet = content.length > 120 ? `${content.slice(0, 117)}...` : content
       fetch("/api/notify", {
         method: "POST",
@@ -263,7 +265,7 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
   function startEdit(n: Notice) {
     setTitle(n.title)
     setContent(n.content)
-    setImageUrl(n.image_url || "")
+    setImageUrls(n.image_urls && n.image_urls.length ? [...n.image_urls] : [""])
     setEditingId(n.id)
     setShowForm(true)
   }
@@ -338,12 +340,32 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
               rows={4}
               className="flex w-full rounded-2xl border border-slate-200/70 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-900/40 px-4 py-3 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1e3a8a] dark:focus-visible:ring-[#14b8a6] resize-none text-slate-800 dark:text-slate-100"
             />
-            <Input
-              placeholder="Image URL (Optional)"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              className="rounded-full px-4 h-11 bg-slate-50/60 dark:bg-slate-900/40 border-slate-200/70 dark:border-slate-700"
-            />
+            <div className="space-y-2">
+              {imageUrls.map((url, idx) => (
+                <div key={idx} className="flex items-center gap-2">
+                  <Input
+                    placeholder="Image URL (Optional)"
+                    value={url}
+                    onChange={(e) => {
+                      const next = [...imageUrls]
+                      next[idx] = e.target.value
+                      if (idx === imageUrls.length - 1 && e.target.value) next.push("")
+                      setImageUrls(next)
+                    }}
+                    className="rounded-full px-4 h-11 bg-slate-50/60 dark:bg-slate-900/40 border-slate-200/70 dark:border-slate-700 flex-1"
+                  />
+                  {idx > 0 && (
+                    <button
+                      onClick={() => setImageUrls(imageUrls.filter((_, i) => i !== idx))}
+                      className="shrink-0 h-9 w-9 flex items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30 text-red-500 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
+                      aria-label="Remove image"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
             <Button className="w-full rounded-full h-11" onClick={handleSubmit} disabled={editingId === null && (!title || !content)}>
               {editingId !== null ? "Update Notice" : "Publish Notice"}
             </Button>
@@ -439,14 +461,36 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
                       {n.content}
                     </p>
 
-                    {n.image_url && (
-                      <img
-                        src={n.image_url}
-                        alt=""
-                        onClick={(e) => { e.stopPropagation(); setSelectedImage(n.image_url!) }}
-                        className="w-full max-h-[300px] object-cover rounded-xl mt-2 cursor-pointer"
-                      />
-                    )}
+                    {(Array.isArray(n.image_urls) && n.image_urls.length > 0) || (n.image_url && n.image_url.trim() !== "") ? (() => {
+                      const urls = Array.isArray(n.image_urls) && n.image_urls.length > 0
+                        ? n.image_urls
+                        : n.image_url
+                        ? [n.image_url]
+                        : []
+                      if (urls.length === 1) {
+                        return (
+                          <img
+                            src={urls[0]}
+                            alt=""
+                            onClick={(e) => { e.stopPropagation(); setSelectedImage(urls[0]) }}
+                            className="w-full max-h-[280px] object-cover rounded-xl mt-3 mx-auto block border border-white/5 cursor-pointer"
+                          />
+                        )
+                      }
+                      return (
+                        <div className="flex flex-wrap justify-center gap-3 mt-3 mx-auto">
+                          {urls.map((url, idx) => (
+                            <img
+                              key={idx}
+                              src={url}
+                              alt=""
+                              onClick={(e) => { e.stopPropagation(); setSelectedImage(url) }}
+                              className="w-[110px] h-[110px] object-cover rounded-xl border border-white/10 shadow-lg cursor-pointer transition-all duration-300 ease hover:scale-105 hover:opacity-90"
+                            />
+                          ))}
+                        </div>
+                      )
+                    })() : null}
                   </CardContent>
                 </Card>
               </div>
@@ -543,14 +587,36 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
                       {selectedNotice.content}
                     </p>
 
-                    {selectedNotice.image_url && (
-                      <img
-                        src={selectedNotice.image_url}
-                        alt=""
-                        onClick={() => setSelectedImage(selectedNotice.image_url!)}
-                        className="w-full max-h-[300px] object-cover rounded-xl cursor-pointer"
-                      />
-                    )}
+                    {(Array.isArray(selectedNotice.image_urls) && selectedNotice.image_urls.length > 0) || (selectedNotice.image_url && selectedNotice.image_url.trim() !== "") ? (() => {
+                      const urls = Array.isArray(selectedNotice.image_urls) && selectedNotice.image_urls.length > 0
+                        ? selectedNotice.image_urls
+                        : selectedNotice.image_url
+                        ? [selectedNotice.image_url]
+                        : []
+                      if (urls.length === 1) {
+                        return (
+                          <img
+                            src={urls[0]}
+                            alt=""
+                            onClick={() => setSelectedImage(urls[0])}
+                            className="w-full max-h-[280px] object-cover rounded-xl mx-auto block border border-white/5 cursor-pointer"
+                          />
+                        )
+                      }
+                      return (
+                        <div className="flex flex-wrap justify-center gap-3 mx-auto">
+                          {urls.map((url, idx) => (
+                            <img
+                              key={idx}
+                              src={url}
+                              alt=""
+                              onClick={() => setSelectedImage(url)}
+                              className="w-[110px] h-[110px] object-cover rounded-xl border border-white/10 shadow-lg cursor-pointer transition-all duration-300 ease hover:scale-105 hover:opacity-90"
+                            />
+                          ))}
+                        </div>
+                      )
+                    })() : null}
 
                     {isAdmin && (
                       <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-200/70 dark:border-slate-800/80">
