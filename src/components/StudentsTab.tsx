@@ -5,7 +5,7 @@ import { createPortal } from "react-dom"
 import { getSupabase } from "@/lib/supabase"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Loader2, Search, Users, Plus, X, Trash2, Pencil, GripVertical } from "lucide-react"
+import { Loader2, Search, Users, Plus, X, Trash2, Pencil, GripVertical, Phone, Droplet } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import LazyImage from "@/components/ui/LazyImage"
@@ -32,6 +32,8 @@ interface Student {
   name: string
   student_id: string
   image_url?: string | null
+  phone_number?: string | null
+  blood_group?: string | null
   position?: number | null
 }
 
@@ -106,9 +108,25 @@ function SortableStudentCard({
                 </div>
               )}
             </div>
-            <span className="font-semibold text-gray-800 dark:text-[#e5e7eb] text-lg truncate">
-              {student.name}
-            </span>
+            <div className="min-w-0">
+              <span className="font-semibold text-gray-800 dark:text-[#e5e7eb] text-lg truncate block leading-snug">
+                {student.name}
+              </span>
+              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                {student.phone_number && student.phone_number.trim() !== "" && (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                    <Phone className="h-3 w-3" />
+                    {student.phone_number}
+                  </span>
+                )}
+                {student.blood_group && student.blood_group.trim() !== "" && (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold px-1.5 py-0.5 rounded-md bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400">
+                    <Droplet className="h-3 w-3" />
+                    {student.blood_group}
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <span className="bg-indigo-50 dark:bg-[#1c1d29] text-indigo-700 dark:text-teal-400 px-3 py-1 rounded-full text-xs font-bold tracking-wide">
@@ -117,7 +135,8 @@ function SortableStudentCard({
             {isAdmin && (
               <>
                 <button
-                  onClick={(e) => {
+                  onPointerDown={(e) => {
+                    e.preventDefault()
                     e.stopPropagation()
                     onEdit()
                   }}
@@ -126,7 +145,8 @@ function SortableStudentCard({
                   <Pencil className="h-4 w-4" />
                 </button>
                 <button
-                  onClick={(e) => {
+                  onPointerDown={(e) => {
+                    e.preventDefault()
                     e.stopPropagation()
                     onDelete()
                   }}
@@ -152,10 +172,18 @@ export default function StudentsTab({ isAdmin }: { isAdmin: boolean }) {
   const [name, setName] = useState("")
   const [studentId, setStudentId] = useState("")
   const [imageUrl, setImageUrl] = useState("")
+  const [phoneNumber, setPhoneNumber] = useState("")
+  const [bloodGroup, setBloodGroup] = useState("")
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [mounted, setMounted] = useState(false)
 
-  const draftKeys = { name: "draft_student_name", studentId: "draft_student_id", imageUrl: "draft_student_image" }
+  const draftKeys = {
+    name: "draft_student_name",
+    studentId: "draft_student_id",
+    imageUrl: "draft_student_image",
+    phoneNumber: "draft_student_phone",
+    bloodGroup: "draft_student_blood",
+  }
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -169,9 +197,13 @@ export default function StudentsTab({ isAdmin }: { isAdmin: boolean }) {
       const savedName = window.localStorage.getItem(draftKeys.name)
       const savedId = window.localStorage.getItem(draftKeys.studentId)
       const savedImage = window.localStorage.getItem(draftKeys.imageUrl)
+      const savedPhone = window.localStorage.getItem(draftKeys.phoneNumber)
+      const savedBlood = window.localStorage.getItem(draftKeys.bloodGroup)
       if (savedName) setName(savedName)
       if (savedId) setStudentId(savedId)
       if (savedImage) setImageUrl(savedImage)
+      if (savedPhone) setPhoneNumber(savedPhone)
+      if (savedBlood) setBloodGroup(savedBlood)
     } catch {
       // ignore storage errors
     }
@@ -184,12 +216,14 @@ export default function StudentsTab({ isAdmin }: { isAdmin: boolean }) {
         window.localStorage.setItem(draftKeys.name, name)
         window.localStorage.setItem(draftKeys.studentId, studentId)
         window.localStorage.setItem(draftKeys.imageUrl, imageUrl)
+        window.localStorage.setItem(draftKeys.phoneNumber, phoneNumber)
+        window.localStorage.setItem(draftKeys.bloodGroup, bloodGroup)
       } catch {
         // ignore storage errors
       }
     }, 500)
     return () => clearTimeout(timer)
-  }, [name, studentId, imageUrl, showForm, editingId])
+  }, [name, studentId, imageUrl, phoneNumber, bloodGroup, showForm, editingId])
 
   useEffect(() => {
     if (selectedStudent) {
@@ -250,6 +284,8 @@ export default function StudentsTab({ isAdmin }: { isAdmin: boolean }) {
       window.localStorage.removeItem(draftKeys.name)
       window.localStorage.removeItem(draftKeys.studentId)
       window.localStorage.removeItem(draftKeys.imageUrl)
+      window.localStorage.removeItem(draftKeys.phoneNumber)
+      window.localStorage.removeItem(draftKeys.bloodGroup)
     } catch { /* ignore */ }
   }
 
@@ -258,6 +294,8 @@ export default function StudentsTab({ isAdmin }: { isAdmin: boolean }) {
     setName("")
     setStudentId("")
     setImageUrl("")
+    setPhoneNumber("")
+    setBloodGroup("")
     setEditingId(null)
     setShowForm(false)
   }
@@ -267,6 +305,8 @@ export default function StudentsTab({ isAdmin }: { isAdmin: boolean }) {
       name,
       student_id: studentId,
       image_url: imageUrl || null,
+      phone_number: phoneNumber || null,
+      blood_group: bloodGroup || null,
     }
     if (editingId !== null) {
       const { data, error } = await getSupabase()
@@ -314,6 +354,8 @@ export default function StudentsTab({ isAdmin }: { isAdmin: boolean }) {
     setName(s.name)
     setStudentId(s.student_id)
     setImageUrl(s.image_url || "")
+    setPhoneNumber(s.phone_number || "")
+    setBloodGroup(s.blood_group || "")
     setEditingId(s.id)
     setShowForm(true)
   }
@@ -328,7 +370,8 @@ export default function StudentsTab({ isAdmin }: { isAdmin: boolean }) {
   const filtered = students.filter(
     (s) =>
       s.name?.toLowerCase().includes(search.toLowerCase()) ||
-      s.student_id?.toLowerCase().includes(search.toLowerCase())
+      s.student_id?.toLowerCase().includes(search.toLowerCase()) ||
+      s.blood_group?.toLowerCase().includes(search.toLowerCase())
   )
 
   if (loading) {
@@ -345,7 +388,7 @@ export default function StudentsTab({ isAdmin }: { isAdmin: boolean }) {
         <div className="relative flex-1">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-[#9ca3af] pointer-events-none" />
           <Input
-            placeholder="Search by name or ID..."
+            placeholder="Search by name, ID, or Blood Group..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="rounded-full pl-10 pr-4 h-11 bg-white dark:bg-slate-900/40 dark:backdrop-blur-md shadow-sm border-slate-200/70 dark:border-white/5 focus-visible:ring-[#1e3a8a]/30 dark:focus-visible:ring-teal-500/40 focus-visible:border-[#1e3a8a]/40 dark:focus-visible:border-teal-500/40"
@@ -387,6 +430,23 @@ export default function StudentsTab({ isAdmin }: { isAdmin: boolean }) {
               onChange={(e) => setImageUrl(e.target.value)}
               className="rounded-full px-4 h-11 bg-slate-50/60 border-slate-200/70"
             />
+            <Input
+              type="tel"
+              placeholder="Phone Number"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              className="rounded-full px-4 h-11 bg-slate-50/60 border-slate-200/70"
+            />
+            <select
+              value={bloodGroup}
+              onChange={(e) => setBloodGroup(e.target.value)}
+              className="w-full h-11 rounded-full px-4 bg-slate-50/60 border border-slate-200/70 text-sm text-slate-800 dark:bg-slate-900/40 dark:border-slate-700 dark:text-slate-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1e3a8a] dark:focus-visible:ring-[#14b8a6]"
+            >
+              <option value="">Blood Group (Optional)</option>
+              {["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"].map((bg) => (
+                <option key={bg} value={bg}>{bg}</option>
+              ))}
+            </select>
             <Button className="w-full rounded-full h-11" onClick={handleSubmit} disabled={editingId === null && (!name || !studentId)}>
               {editingId !== null ? "Update" : "Add Student"}
             </Button>
@@ -469,9 +529,25 @@ export default function StudentsTab({ isAdmin }: { isAdmin: boolean }) {
                         </div>
                       )}
                     </div>
-                    <span className="font-semibold text-gray-800 dark:text-[#e5e7eb] text-lg truncate">
-                      {s.name}
-                    </span>
+                    <div className="min-w-0">
+                      <span className="font-semibold text-gray-800 dark:text-[#e5e7eb] text-lg truncate block leading-snug">
+                        {s.name}
+                      </span>
+                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                        {s.phone_number && s.phone_number.trim() !== "" && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                            <Phone className="h-3 w-3" />
+                            {s.phone_number}
+                          </span>
+                        )}
+                        {s.blood_group && s.blood_group.trim() !== "" && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-1.5 py-0.5 rounded-md bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400">
+                            <Droplet className="h-3 w-3" />
+                            {s.blood_group}
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <span className="bg-indigo-50 dark:bg-[#1c1d29] text-indigo-700 dark:text-teal-400 px-3 py-1 rounded-full text-xs font-bold tracking-wide">
@@ -534,6 +610,21 @@ export default function StudentsTab({ isAdmin }: { isAdmin: boolean }) {
               <span className="mt-3 inline-block px-5 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 font-mono text-sm shadow-sm">
                 ID: {selectedStudent.student_id}
               </span>
+
+              <div className="mt-4 flex items-center justify-center gap-2 flex-wrap">
+                {selectedStudent.phone_number && selectedStudent.phone_number.trim() !== "" && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 text-xs font-medium">
+                    <Phone className="h-3.5 w-3.5" />
+                    {selectedStudent.phone_number}
+                  </span>
+                )}
+                {selectedStudent.blood_group && selectedStudent.blood_group.trim() !== "" && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-bold">
+                    <Droplet className="h-3.5 w-3.5" />
+                    {selectedStudent.blood_group}
+                  </span>
+                )}
+              </div>
 
               <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-4 pb-4">
                 Department of Civil Engineering
