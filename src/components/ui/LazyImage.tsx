@@ -51,6 +51,7 @@ export default function LazyImage({
         quality={quality}
         priority={priority}
         loading={priority || eager ? "eager" : "lazy"}
+        unoptimized
         decoding="async"
         onLoad={() => setLoaded(true)}
         onError={() => setLoaded(true)}
