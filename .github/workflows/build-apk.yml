@@ -29,6 +29,7 @@ jobs:
       - name: Sync Capacitor
         run: |
           npm install -g @capacitor/cli
+          npm install @capacitor/core @capacitor/android
           npx cap sync android
 
       - name: Set up Java
