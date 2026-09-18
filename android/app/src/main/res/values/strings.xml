@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">EUB 39B</string>
+    <string name="title_activity_main">EUB 39B</string>
+    <string name="package_name">com.eub39batch.app</string>
+    <string name="custom_url_scheme">com.eub39batch.app</string>
+</resources>

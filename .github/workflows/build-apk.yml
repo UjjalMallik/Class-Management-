@@ -34,7 +34,7 @@ jobs:
           cache: gradle
 
       - name: Build debug APK
-        working-directory: ../android
+        working-directory: android
         run: ./gradlew assembleDebug
 
       - name: Upload APK
