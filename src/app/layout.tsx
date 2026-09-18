@@ -5,6 +5,7 @@ import { GoogleAnalytics } from "@next/third-parties/google"
 import "./globals.css"
 import { Toaster } from "sonner"
 import { ThemeProvider } from "@/components/theme-provider"
+import PushNotificationsProvider from "@/components/PushNotificationsProvider"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -31,6 +32,7 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} min-h-dvh`} suppressHydrationWarning>
         <ThemeProvider>
+          <PushNotificationsProvider />
           {children}
           <Toaster position="top-center" richColors />
         </ThemeProvider>

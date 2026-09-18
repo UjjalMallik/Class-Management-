@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "92151432242",
+    "project_id": "eub-39b",
+    "storage_bucket": "eub-39b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:92151432242:android:e44c7cc5388e71863c282b",
+        "android_client_info": {
+          "package_name": "com.eub39b.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCbTMZsOwTkUrZAiBFZBucr8kA9SV6X67A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
