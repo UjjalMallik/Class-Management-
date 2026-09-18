@@ -4,7 +4,7 @@ android {
     namespace = "com.eub39batch.app"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.eub39batch.app"
+        applicationId "com.eub39b.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
