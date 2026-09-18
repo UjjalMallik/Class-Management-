@@ -4,6 +4,7 @@ import { useEffect } from "react"
 import { Capacitor } from "@capacitor/core"
 import { PushNotifications } from "@capacitor/push-notifications"
 import { registerPushToken } from "@/lib/notifications"
+import { toast } from "sonner"
 
 export default function PushNotificationsProvider() {
   useEffect(() => {
@@ -32,6 +33,9 @@ export default function PushNotificationsProvider() {
       }),
       PushNotifications.addListener("pushNotificationReceived", (notification) => {
         console.info("Push notification received:", notification)
+        toast(notification.title || "New notification", {
+          description: notification.body,
+        })
       }),
       PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
         console.info("Push notification action:", action)

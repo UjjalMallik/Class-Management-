@@ -32,12 +32,18 @@ Deno.serve(async (request) => {
     const { data, error } = await supabase.from("push_tokens").select("token")
     if (error) throw error
 
+    console.info("Sending push notification:", {
+      type,
+      tokenCount: data?.length ?? 0,
+    })
+
     const result = await sendFirebaseNotification(
       (data ?? []).map((row) => row.token as string),
       title.slice(0, 120),
       body.slice(0, 500),
       type,
     )
+    console.info("Push notification result:", result)
     return new Response(JSON.stringify({ success: true, ...result }), { headers: jsonHeaders })
   } catch (error) {
     console.error("Push notification failed:", error)

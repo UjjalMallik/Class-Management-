@@ -74,12 +74,19 @@ export async function sendFirebaseNotification(
           }),
         },
       )
-      return response.ok
+      if (!response.ok) {
+        console.error("FCM rejected token:", {
+          status: response.status,
+          tokenSuffix: token.slice(-8),
+          response: await response.text(),
+        })
+      }
+      return { token, sent: response.ok }
     }),
   )
 
   return {
-    sent: results.filter(Boolean).length,
-    failed: results.filter((sent) => !sent).length,
+    sent: results.filter((result) => result.sent).length,
+    failed: results.filter((result) => !result.sent).length,
   }
 }
