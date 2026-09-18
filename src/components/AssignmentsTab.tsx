@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Loader2, ExternalLink, Plus, X, FileText, Pencil, Trash2 } from "lucide-react"
 import { toast } from "sonner"
+import { notifyNewContent } from "@/lib/notifications"
 
 interface Assignment {
   id: number
@@ -123,17 +124,18 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
       toast.error(error.message)
       return
     }
+    const wasCreating = editingId === null
+    const notificationTitle = title || "Untitled"
+    const notificationBody = link ? "নোটের লিংক অ্যাপে যোগ হয়েছে।" : "নতুন নোট অ্যাপে যোগ হয়েছে।"
     clearDraft()
     resetForm()
     await fetchAssignments()
-      toast.success(editingId !== null ? "Note updated." : "Note published.")
-    if (editingId === null) {
-      fetch("/api/notify", {
-        method: "POST",
-        body: JSON.stringify({
-          title: `নতুন নোট: ${title || "Untitled"}`,
-          message: link ? "নোটের লিংক অ্যাপে যোগ হয়েছে।" : "নতুন নোট অ্যাপে যোগ হয়েছে।",
-        }),
+    toast.success(wasCreating ? "Note published." : "Note updated.")
+    if (wasCreating) {
+      void notifyNewContent({
+        title: `নতুন নোট: ${notificationTitle}`,
+        body: notificationBody,
+        type: "note",
       })
     }
   }

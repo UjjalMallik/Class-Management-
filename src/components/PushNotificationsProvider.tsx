@@ -3,6 +3,7 @@
 import { useEffect } from "react"
 import { Capacitor } from "@capacitor/core"
 import { PushNotifications } from "@capacitor/push-notifications"
+import { registerPushToken } from "@/lib/notifications"
 
 export default function PushNotificationsProvider() {
   useEffect(() => {
@@ -24,6 +25,7 @@ export default function PushNotificationsProvider() {
     const listeners = Promise.all([
       PushNotifications.addListener("registration", (token) => {
         console.info("Push registration token:", token.value)
+        void registerPushToken(token.value)
       }),
       PushNotifications.addListener("registrationError", (error) => {
         console.error("Push registration error:", error)

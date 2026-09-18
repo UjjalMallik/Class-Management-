@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import ImageLightbox from "@/components/ImageLightbox"
 import { Loader2, CalendarCheck, X } from "lucide-react"
+import { notifyNewContent } from "@/lib/notifications"
+import { toast } from "sonner"
 
 const DAYS = ["Thursday", "Friday", "Saturday"]
 
@@ -62,9 +64,16 @@ export default function RoutineTab({ isAdmin }: { isAdmin: boolean }) {
   async function updateImage(day: string) {
     const newUrl = urlInputs[day]
     if (!newUrl) return
-    await getSupabase().from("routine").update({ image_url: newUrl }).eq("day", day)
+    const { error } = await getSupabase().from("routine").update({ image_url: newUrl }).eq("day", day)
+    if (error) return
     await fetchRoutine()
     setUrlInputs((prev) => ({ ...prev, [day]: "" }))
+    toast.success("Routine updated.")
+    void notifyNewContent({
+      title: "New Routine Added!",
+      body: `${day} routine has been updated.`,
+      type: "routine",
+    })
   }
 
   if (loading) {

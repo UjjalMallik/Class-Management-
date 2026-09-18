@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Loader2, MonitorPlay, Plus, X, Link as LinkIcon, Trash2, Clock, ExternalLink } from "lucide-react"
 import { toast } from "sonner"
+import { notifyNewContent } from "@/lib/notifications"
 
 interface ClassLink {
   id: number
@@ -98,12 +99,10 @@ export default function ClassLinks({ isAdmin }: { isAdmin: boolean }) {
     resetForm()
     await fetchLinks()
     toast.success("Class link published.")
-    fetch("/api/notify", {
-      method: "POST",
-      body: JSON.stringify({
-        title: `নতুন ক্লাস লিংক: ${className || "Untitled"}`,
-        message: note || "অ্যাপে ঢুকে ক্লাসে যোগ দিন।",
-      }),
+    void notifyNewContent({
+      title: "New Class Link Added!",
+      body: `${className || "Untitled"}: ${note || "অ্যাপে ঢুকে ক্লাসে যোগ দিন।"}`,
+      type: "class_link",
     })
   }
 

@@ -24,6 +24,7 @@ import {
   Sparkles,
 } from "lucide-react"
 import { toast } from "sonner"
+import { notifyNewContent } from "@/lib/notifications"
 
 interface Notice {
   id: number
@@ -246,14 +247,16 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
       toast.success("Notice updated.")
     } else {
       if (!title || !content) return
-      await getSupabase().from("notices").insert({ title, content, image_urls: urls.length ? urls : null })
+      const { error } = await getSupabase().from("notices").insert({ title, content, image_urls: urls.length ? urls : null })
+      if (error) {
+        toast.error(error.message)
+        return
+      }
       const snippet = content.length > 120 ? `${content.slice(0, 117)}...` : content
-      fetch("/api/notify", {
-        method: "POST",
-        body: JSON.stringify({
-          title: `নতুন নোটিশ: ${title}`,
-          message: snippet,
-        }),
+      void notifyNewContent({
+        title: `New Notice Added! ${title}`,
+        body: snippet,
+        type: "notice",
       })
       toast.success("Notice published. Push notification sent to all students.")
     }
