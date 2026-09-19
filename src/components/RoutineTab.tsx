@@ -123,6 +123,14 @@ export default function RoutineTab({ isAdmin }: { isAdmin: boolean }) {
     }
   }
 
+  async function handleReorderImage(day: string, urls: string[]) {
+    const { error } = await getSupabase()
+      .from("routine")
+      .update({ image_url: urls[0] ?? "", image_urls: urls.length ? urls : null })
+      .eq("day", day)
+    if (error) toast.error(error.message)
+  }
+
   if (loading) {
     return (
       <div className="flex justify-center py-20">
@@ -206,8 +214,9 @@ export default function RoutineTab({ isAdmin }: { isAdmin: boolean }) {
                     images={rowImages}
                     uploadStage={uploadStage}
                     removingUrl={removingUrl}
-                    onFiles={(files) => void handleImageFiles(day, files)}
+                    onFiles={(files) => handleImageFiles(day, files)}
                     onRemove={(url) => void handleRemoveImage(day, url)}
+                    onReorder={(urls) => void handleReorderImage(day, urls)}
                   />
                 </div>
               )}

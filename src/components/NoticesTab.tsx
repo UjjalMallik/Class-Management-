@@ -384,6 +384,7 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
               removingUrl={removingUrl}
               onFiles={handleImageFiles}
               onRemove={handleRemoveImage}
+              onReorder={setImageUrls}
             />
             <Button className="w-full rounded-full h-11" onClick={handleSubmit} disabled={editingId === null && (!title || !content)}>
               {editingId !== null ? "Update Notice" : "Publish Notice"}

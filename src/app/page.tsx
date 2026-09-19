@@ -11,6 +11,7 @@ import StudentsTab from "@/components/StudentsTab"
 import NoticesTab from "@/components/NoticesTab"
 import PullToRefresh from "@/components/PullToRefresh"
 import VisibilityReload from "@/components/VisibilityReload"
+import OfflineRoutine from "@/components/OfflineRoutine"
 
 const ADMIN_STORAGE_KEY = "eub39_admin_unlocked"
 const TAB_STORAGE_KEY = "eub39_active_tab"
@@ -19,6 +20,22 @@ export default function Home() {
   const [view, setView] = useState<"admin" | "student">("student")
   const [activeTab, setActiveTab] = useState<TabKey>("routine")
   const [isHydrated, setIsHydrated] = useState(false)
+  const [isOnline, setIsOnline] = useState(true)
+
+  useEffect(() => {
+    function handleOnlineStatus() {
+      setIsOnline(navigator.onLine)
+    }
+
+    handleOnlineStatus()
+    window.addEventListener("online", handleOnlineStatus)
+    window.addEventListener("offline", handleOnlineStatus)
+
+    return () => {
+      window.removeEventListener("online", handleOnlineStatus)
+      window.removeEventListener("offline", handleOnlineStatus)
+    }
+  }, [])
 
   useEffect(() => {
     try {
@@ -54,6 +71,10 @@ export default function Home() {
   }, [activeTab, isHydrated])
 
   const isAdmin = view === "admin"
+
+  if (!isOnline) {
+    return <OfflineRoutine />
+  }
 
   return (
     <div className="mx-auto max-w-3xl">

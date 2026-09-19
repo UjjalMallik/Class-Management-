@@ -251,6 +251,7 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
               removingUrl={removingUrl}
               onFiles={handleImageFiles}
               onRemove={handleRemoveImage}
+              onReorder={setImageUrls}
             />
             <Button className="w-full rounded-full h-11" onClick={handleSubmit}>
               {editingId !== null ? "Update Note" : "Publish Note"}
