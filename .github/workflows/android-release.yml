@@ -60,11 +60,14 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug
 
+      - name: Rename APK
+        run: mv "android/app/build/outputs/apk/debug/app-debug.apk" "android/app/build/outputs/apk/debug/EUB 39B ${{ github.event.inputs.version_tag }}.apk"
+
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.version_tag }}
           name: ${{ inputs.version_tag }}
           body: ${{ inputs.release_notes }}
-          files: android/app/build/outputs/apk/debug/app-debug.apk
+          files: android/app/build/outputs/apk/debug/EUB 39B ${{ github.event.inputs.version_tag }}.apk
           fail_on_unmatched_files: true
