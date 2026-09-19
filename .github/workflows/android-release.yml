@@ -35,17 +35,22 @@ jobs:
         run: npm ci
 
       - name: Build Web App
-        env:
-          CAPACITOR_BUILD: true
         run: |
           echo "NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}" >> .env.production
           echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" >> .env.production
           echo "NEXT_PUBLIC_ADMIN_PIN=${{ secrets.NEXT_PUBLIC_ADMIN_PIN }}" >> .env.production
           echo "NEXT_PUBLIC_API_ORIGIN=${{ secrets.NEXT_PUBLIC_API_ORIGIN }}" >> .env.production
+          mv next.config.ts next.config.backup
+          echo "/** @type {import('next').NextConfig} */ const nextConfig = { output: 'export', images: { unoptimized: true } }; module.exports = nextConfig;" > next.config.js
           rm -rf /tmp/api-backup
           mv src/app/api /tmp/api-backup || true
+          cleanup() {
+            rm -f next.config.js
+            mv next.config.backup next.config.ts
+            mv /tmp/api-backup src/app/api || true
+          }
+          trap cleanup EXIT
           npm run build
-          mv /tmp/api-backup src/app/api || true
           test -d out
 
       - name: Sync Capacitor
