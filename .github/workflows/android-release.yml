@@ -54,15 +54,6 @@ jobs:
           java-version: 21
           cache: gradle
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          packages: |
-            cmdline-tools;latest
-            platform-tools
-            platforms;android-36
-            build-tools;34.0.0
-
       - name: Build debug APK
         working-directory: android
         run: |
