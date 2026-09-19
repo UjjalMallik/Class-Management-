@@ -105,8 +105,8 @@ export default function Header({ view, onViewChange }: HeaderProps) {
   }
 
   function handleConfirm() {
-    const expected = process.env.NEXT_PUBLIC_ADMIN_PIN ?? "1234"
-    if (pin === expected) {
+    const expected = process.env.NEXT_PUBLIC_ADMIN_PIN
+    if (expected && pin === expected) {
       try {
         window.localStorage.setItem(ADMIN_STORAGE_KEY, "true")
       } catch {

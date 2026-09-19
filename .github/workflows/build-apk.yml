@@ -27,7 +27,7 @@ jobs:
         run: |
           echo "NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}" >> .env.production
           echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" >> .env.production
-          echo "NEXT_PUBLIC_ADMIN_PIN=12345" >> .env.production
+          echo "NEXT_PUBLIC_ADMIN_PIN=${{ secrets.NEXT_PUBLIC_ADMIN_PIN }}" >> .env.production
           npm run build
 
       - name: Sync Capacitor

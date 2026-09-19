@@ -21,22 +21,23 @@ export default function OfflineRoutine() {
         </h1>
 
         <RoutineDay className="border-emerald-400" day="Thursday" mode="Online">
-          <RoutineSlot time="05:30PM - 06:20 PM" subject="MTH-207: MATH IV" />
-          <RoutineSlot time="06:30PM - 08:20 PM" subject="CE-231: Principles of Soil Mechanics" />
-          <RoutineSlot time="08:30PM - 09:20 PM" subject="CE-251: Fluid Mechanics" />
+          <RoutineSlot time="5:30 PM - 6:20 PM" subject="MTH-207: Math-IV (Applied Mathmatics for Engineering)" />
+          <RoutineSlot time="6:30 PM - 8:20 PM" subject="CE-231: Principles of Soil Mechanics" />
+          <RoutineSlot time="8:30 PM - 9:20 PM" subject="CE-251: Fluid Mechanics" />
         </RoutineDay>
 
         <RoutineDay className="border-blue-400" day="Friday" mode="In Person">
-          <RoutineSlot time="09:00 - 10:40 AM" subject="Engineering Geology & Geomorphology" room="315" />
-          <RoutineSlot time="10:50 - 12:30 PM" subject="Computer Fundamental (Lab)" room="520" />
-          <RoutineSlot time="03:00 - 04:40 PM" subject="Mechanics of Solid II" room="315" />
-          <RoutineSlot time="04:50 - 06:30 PM" subject="Computer Programming Sessional (Lab)" room="520" />
-          <RoutineSlot time="06:50 - 08:30 PM" subject="Civil Engineering Materials (Lab)" room="315" />
+          <RoutineSlot time="09:00 AM - 10:40 AM" subject="CE-231: Principles of Soil Mechanics" room="324" />
+          <RoutineSlot time="10:50 AM - 12:30 PM" subject="CE-251: Fluid Mechanics" room="315" />
+          <RoutineSlot time="12:30 PM - 3:00 PM" subject="Lunch & Prayer Break" room="315" />
+          <RoutineSlot time="3:00 PM - 4:40 PM" subject="CE-212: Structural Mechanics & Materials LAB" room="315" />
+          <RoutineSlot time="4:50 PM - 6:30 PM" subject="CE-252: Fluid Mechanics LAB" room="315" />
+          <RoutineSlot time="6:50 PM - 8:30 PM" subject="MTH-207: Math-IV (Applied Mathmatics for Engineering)" room="315" />
         </RoutineDay>
 
         <RoutineDay className="border-amber-400" day="Saturday" mode="In Person">
-          <RoutineSlot time="05:30 - 07:10 PM" subject="Numerical Method" room="315" />
-          <RoutineSlot time="07:20 - 09:00 PM" subject="Math-3" room="315" />
+          <RoutineSlot time="5:30 PM - 7:10 PM" subject="ENG-202: Developing English Language Skills" room="315" />
+          <RoutineSlot time="7:20 PM - 9:00 PM" subject="HUM-205: Engineering Economics" room="315" />
         </RoutineDay>
 
         <section className="mt-11 rounded-2xl border border-dashed border-sky-400/25 bg-sky-400/[0.04] px-5 py-6 text-center backdrop-blur-sm">
