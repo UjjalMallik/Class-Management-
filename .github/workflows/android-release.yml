@@ -28,7 +28,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: '22'
           cache: npm
 
       - name: Install dependencies
@@ -40,22 +40,15 @@ jobs:
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           NEXT_PUBLIC_API_ORIGIN: ${{ secrets.NEXT_PUBLIC_API_ORIGIN }}
         run: |
-          echo "NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}" >> .env.production
-          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" >> .env.production
-          echo "NEXT_PUBLIC_ADMIN_PIN=${{ secrets.NEXT_PUBLIC_ADMIN_PIN }}" >> .env.production
-          echo "NEXT_PUBLIC_API_ORIGIN=${{ secrets.NEXT_PUBLIC_API_ORIGIN }}" >> .env.production
-          mv next.config.ts next.config.backup
-          echo "/** @type {import('next').NextConfig} */ const nextConfig = { output: 'export', images: { unoptimized: true } }; module.exports = nextConfig;" > next.config.js
-          rm -rf /tmp/api-backup
+          mv next.config.ts next.config.ts.bak || true
+          mv next.config.mjs next.config.mjs.bak || true
           mv src/app/api /tmp/api-backup || true
-          cleanup() {
-            rm -f next.config.js
-            mv next.config.backup next.config.ts
-            mv /tmp/api-backup src/app/api || true
-          }
-          trap cleanup EXIT
+          echo "export default { output: 'export', images: { unoptimized: true } };" > next.config.mjs
           npm run build
-          test -d out
+          rm next.config.mjs
+          mv next.config.ts.bak next.config.ts || true
+          mv next.config.mjs.bak next.config.mjs || true
+          mv /tmp/api-backup src/app/api || true
 
       - name: Sync Capacitor
         run: |
