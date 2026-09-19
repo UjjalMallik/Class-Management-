@@ -1,6 +1,5 @@
 "use client"
 
-import { Browser } from "@capacitor/browser"
 import { Moon, Sun, ShieldCheck, Eye, EyeOff, X, AlertCircle, Calendar, Clock, Globe, Menu } from "lucide-react"
 import { useTheme } from "next-themes"
 import { useEffect, useRef, useState } from "react"
@@ -47,6 +46,7 @@ export default function Header({ view, onViewChange }: HeaderProps) {
   const [showPin, setShowPin] = useState(false)
   const [shaking, setShaking] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [isPortalOpen, setIsPortalOpen] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -131,7 +131,7 @@ export default function Header({ view, onViewChange }: HeaderProps) {
   }
 
   function handleOpenStudentPortal() {
-    void Browser.open({ url: "https://iems.eub.edu.bd/" })
+    setIsPortalOpen(true)
   }
 
   return (
@@ -219,6 +219,32 @@ export default function Header({ view, onViewChange }: HeaderProps) {
           </div>
         </div>
       </header>
+
+      {isPortalOpen && (
+        <div
+          className="fixed inset-0 z-[60] flex h-[100dvh] flex-col bg-background"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Student Portal"
+        >
+          <div className="flex h-14 shrink-0 items-center justify-between border-b bg-[#1e3a8a] px-3 text-white shadow-sm dark:border-slate-700 dark:bg-[#0f172a] sm:px-4">
+            <span className="text-sm font-semibold">Student Portal</span>
+            <button
+              onClick={() => setIsPortalOpen(false)}
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-white/10"
+              aria-label="Back to app"
+            >
+              <X className="h-4 w-4" />
+              <span>Back to App</span>
+            </button>
+          </div>
+          <iframe
+            src="https://iems.eub.edu.bd/"
+            title="Student Portal"
+            className="min-h-0 w-full flex-1 border-0"
+          />
+        </div>
+      )}
 
       <Dialog open={pinModalOpen} onOpenChange={handleOpenChange}>
         <DialogPortal>
