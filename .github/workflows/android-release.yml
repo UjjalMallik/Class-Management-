@@ -39,7 +39,10 @@ jobs:
           echo "NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}" >> .env.production
           echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" >> .env.production
           echo "NEXT_PUBLIC_ADMIN_PIN=${{ secrets.NEXT_PUBLIC_ADMIN_PIN }}" >> .env.production
-          npm run build
+          echo "NEXT_PUBLIC_API_ORIGIN=${{ secrets.NEXT_PUBLIC_API_ORIGIN }}" >> .env.production
+          mv src/app/api src/app/api.disabled
+          trap 'mv src/app/api.disabled src/app/api' EXIT
+          CAPACITOR_BUILD=true npm run build
 
       - name: Sync Capacitor
         run: |

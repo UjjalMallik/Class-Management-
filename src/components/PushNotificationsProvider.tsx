@@ -11,14 +11,25 @@ export default function PushNotificationsProvider() {
     if (!Capacitor.isNativePlatform()) return
 
     const setupPushNotifications = async () => {
-      const currentPermissions = await PushNotifications.checkPermissions()
-      let receivePermission = currentPermissions.receive
+      if (Capacitor.getPlatform() === "android") {
+        await PushNotifications.createChannel({
+          id: "class-updates",
+          name: "Class updates",
+          description: "Notifications about new class content",
+          importance: 4,
+          visibility: 1,
+        })
+      }
 
-      if (receivePermission === "prompt") {
+      let receivePermission = (await PushNotifications.checkPermissions()).receive
+      if (receivePermission !== "granted") {
         receivePermission = (await PushNotifications.requestPermissions()).receive
       }
 
-      if (receivePermission !== "granted") return
+      if (receivePermission !== "granted") {
+        console.warn("Push notifications permission was not granted:", receivePermission)
+        return
+      }
 
       await PushNotifications.register()
     }
@@ -42,7 +53,9 @@ export default function PushNotificationsProvider() {
       }),
     ])
 
-    void setupPushNotifications()
+    void setupPushNotifications().catch((error) => {
+      console.error("Push notification setup failed:", error)
+    })
 
     return () => {
       void listeners.then((handles) => {

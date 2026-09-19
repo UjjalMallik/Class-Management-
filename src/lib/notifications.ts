@@ -1,19 +1,22 @@
-import { getSupabase } from "@/lib/supabase"
-
 interface NotificationPayload {
   title: string
   body: string
   type: "routine" | "note" | "class_link" | "notice"
 }
 
+const apiOrigin = process.env.NEXT_PUBLIC_API_ORIGIN || ""
+
 export async function registerPushToken(token: string) {
   try {
-    const { data, error } = await getSupabase().functions.invoke("register-push-token", {
-      body: { token, platform: "android" },
+    const response = await fetch(`${apiOrigin}/api/register-push-token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, platform: "android" }),
     })
+    const data = await response.json()
 
-    if (error) {
-      console.error("Push token registration failed:", error, { data })
+    if (!response.ok) {
+      console.error("Push token registration failed:", data)
       return
     }
 
@@ -25,12 +28,18 @@ export async function registerPushToken(token: string) {
 
 export async function notifyNewContent(payload: NotificationPayload) {
   try {
-    const { data, error } = await getSupabase().functions.invoke("send-push", {
-      body: payload,
+    const response = await fetch(`${apiOrigin}/api/send-push`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-admin-pin": process.env.NEXT_PUBLIC_ADMIN_PIN || "",
+      },
+      body: JSON.stringify(payload),
     })
+    const data = await response.json()
 
-    if (error) {
-      console.error("Push notification failed:", error, { payload, data })
+    if (!response.ok) {
+      console.error("Push notification failed:", data, { payload })
       return
     }
 

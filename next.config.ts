@@ -8,7 +8,7 @@ const noCacheHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  output: "export",
+  output: process.env.CAPACITOR_BUILD === "true" ? "export" : undefined,
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "sykjcigvtlrujlbttohu.supabase.co" },

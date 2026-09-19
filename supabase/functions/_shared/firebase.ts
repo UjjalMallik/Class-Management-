@@ -69,6 +69,11 @@ export async function sendFirebaseNotification(
             message: {
               token,
               notification: { title, body },
+              android: {
+                notification: {
+                  channel_id: "class-updates",
+                },
+              },
               data: { type },
             },
           }),
