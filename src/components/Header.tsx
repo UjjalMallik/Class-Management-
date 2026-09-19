@@ -19,6 +19,16 @@ interface HeaderProps {
   onViewChange: (v: "admin" | "student") => void
 }
 
+declare global {
+  interface Window {
+    cordova?: {
+      InAppBrowser?: {
+        open: (url: string, target: string, options: string) => unknown
+      }
+    }
+  }
+}
+
 const ADMIN_STORAGE_KEY = "eub39_admin_unlocked"
 
 function formatDate(d: Date): string {
@@ -46,7 +56,6 @@ export default function Header({ view, onViewChange }: HeaderProps) {
   const [showPin, setShowPin] = useState(false)
   const [shaking, setShaking] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
-  const [isPortalOpen, setIsPortalOpen] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -130,8 +139,17 @@ export default function Header({ view, onViewChange }: HeaderProps) {
     setPinModalOpen(open)
   }
 
-  function handleOpenStudentPortal() {
-    setIsPortalOpen(true)
+  function openPortal() {
+    const portalUrl = "https://iems.eub.edu.bd/"
+    if (window.cordova && window.cordova.InAppBrowser) {
+      window.cordova.InAppBrowser.open(
+        portalUrl,
+        "_blank",
+        "location=no,zoom=no,toolbar=yes,toolbarcolor=#0f172a,navigationbuttoncolor=#ffffff,closebuttoncaption=< Back",
+      )
+    } else {
+      window.open(portalUrl, "_blank", "noopener,noreferrer")
+    }
   }
 
   return (
@@ -170,7 +188,7 @@ export default function Header({ view, onViewChange }: HeaderProps) {
           </div>
           <div className="relative flex items-center gap-1.5 shrink-0">
             <button
-              onClick={handleOpenStudentPortal}
+              onClick={openPortal}
               className="rounded-full p-2 hover:bg-white/10 transition-colors"
               aria-label="Open Student Portal"
               title="Student Portal"
@@ -219,32 +237,6 @@ export default function Header({ view, onViewChange }: HeaderProps) {
           </div>
         </div>
       </header>
-
-      {isPortalOpen && (
-        <div
-          className="fixed inset-0 z-[60] flex h-[100dvh] flex-col bg-background"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Student Portal"
-        >
-          <div className="flex h-14 shrink-0 items-center justify-between border-b bg-[#1e3a8a] px-3 text-white shadow-sm dark:border-slate-700 dark:bg-[#0f172a] sm:px-4">
-            <span className="text-sm font-semibold">Student Portal</span>
-            <button
-              onClick={() => setIsPortalOpen(false)}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-white/10"
-              aria-label="Back to app"
-            >
-              <X className="h-4 w-4" />
-              <span>Back to App</span>
-            </button>
-          </div>
-          <iframe
-            src="https://iems.eub.edu.bd/"
-            title="Student Portal"
-            className="min-h-0 w-full flex-1 border-0"
-          />
-        </div>
-      )}
 
       <Dialog open={pinModalOpen} onOpenChange={handleOpenChange}>
         <DialogPortal>
