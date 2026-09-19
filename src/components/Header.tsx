@@ -1,6 +1,7 @@
 "use client"
 
-import { Moon, Sun, ShieldCheck, Eye, EyeOff, X, AlertCircle, Calendar, Clock } from "lucide-react"
+import { Browser } from "@capacitor/browser"
+import { Moon, Sun, ShieldCheck, Eye, EyeOff, X, AlertCircle, Calendar, Clock, Globe, Menu } from "lucide-react"
 import { useTheme } from "next-themes"
 import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
@@ -45,6 +46,7 @@ export default function Header({ view, onViewChange }: HeaderProps) {
   const [pinError, setPinError] = useState(false)
   const [showPin, setShowPin] = useState(false)
   const [shaking, setShaking] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -128,6 +130,10 @@ export default function Header({ view, onViewChange }: HeaderProps) {
     setPinModalOpen(open)
   }
 
+  function handleOpenStudentPortal() {
+    void Browser.open({ url: "https://iems.eub.edu.bd/" })
+  }
+
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 bg-[#1e3a8a] dark:bg-[#0f172a] dark:border-b dark:border-slate-700/60 dark:shadow-sm text-white shadow-lg">
@@ -162,25 +168,54 @@ export default function Header({ view, onViewChange }: HeaderProps) {
               )}
             </div>
           </div>
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <div className="relative flex items-center gap-1.5 shrink-0">
             <button
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="rounded-full p-1.5 hover:bg-white/10 transition-colors shrink-0"
-              aria-label="Toggle theme"
+              onClick={handleOpenStudentPortal}
+              className="rounded-full p-2 hover:bg-white/10 transition-colors"
+              aria-label="Open Student Portal"
+              title="Student Portal"
             >
-              {mounted && theme === "dark" ? (
-                <Sun className="h-4 w-4" />
-              ) : (
-                <Moon className="h-4 w-4" />
-              )}
+              <Globe className="h-5 w-5" />
             </button>
-            <span className="text-xs font-medium uppercase tracking-wide whitespace-nowrap">
-              {view === "admin" ? "Admin" : "Student"}
-            </span>
-            <Switch
-              checked={view === "admin"}
-              onCheckedChange={handleToggle}
-            />
+            <button
+              onClick={() => setMenuOpen((open) => !open)}
+              className="rounded-full p-2 hover:bg-white/10 transition-colors"
+              aria-label="Open header menu"
+              aria-expanded={menuOpen}
+              aria-controls="header-menu"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+            {menuOpen && (
+              <div
+                id="header-menu"
+                className="absolute right-0 top-12 w-56 rounded-xl border border-white/15 bg-[#173477] p-3 shadow-xl dark:border-slate-700 dark:bg-slate-900"
+              >
+                <div className="flex items-center justify-between gap-3 py-1">
+                  <span className="text-sm font-medium">Appearance</span>
+                  <button
+                    onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                    className="rounded-full p-2 hover:bg-white/10 transition-colors"
+                    aria-label="Toggle theme"
+                  >
+                    {mounted && theme === "dark" ? (
+                      <Sun className="h-4 w-4" />
+                    ) : (
+                      <Moon className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+                <div className="mt-2 flex items-center justify-between gap-3 border-t border-white/10 pt-3">
+                  <span className="text-sm font-medium">
+                    {view === "admin" ? "Admin" : "Student"}
+                  </span>
+                  <Switch
+                    checked={view === "admin"}
+                    onCheckedChange={handleToggle}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </header>
