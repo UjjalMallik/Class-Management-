@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react"
 import { createPortal } from "react-dom"
 import { getSupabase } from "@/lib/supabase"
+import { deleteImage, uploadImages } from "@/lib/image-upload"
+import ImageUploadField from "@/components/ImageUploadField"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -160,6 +162,8 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
   const [selectedNotice, setSelectedNotice] = useState<Notice | null>(null)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
+  const [uploadStage, setUploadStage] = useState<"idle" | "compressing" | "uploading">("idle")
+  const [removingUrl, setRemovingUrl] = useState<string | null>(null)
 
   const draftKeys = { title: "draft_notice_title", content: "draft_notice_content", imageUrls: "draft_notice_images" }
 
@@ -265,10 +269,41 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
     await fetchNotices()
   }
 
+  async function handleImageFiles(files: File[]) {
+    setUploadStage("compressing")
+    try {
+      const urls = await uploadImages(files, setUploadStage)
+      setImageUrls((prev) => [...prev.filter(Boolean), ...urls])
+      toast.success(`${urls.length} image${urls.length === 1 ? "" : "s"} uploaded.`)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Image upload failed.")
+    } finally {
+      setUploadStage("idle")
+    }
+  }
+
+  async function handleRemoveImage(url: string) {
+    setRemovingUrl(url)
+    try {
+      await deleteImage(url)
+      const nextUrls = imageUrls.filter((imageUrl) => imageUrl !== url)
+      setImageUrls(nextUrls)
+      if (editingId !== null) {
+        const { error } = await getSupabase().from("notices").update({ image_urls: nextUrls.length ? nextUrls : null }).eq("id", editingId)
+        if (error) throw error
+      }
+      toast.success("Image removed.")
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not remove image.")
+    } finally {
+      setRemovingUrl(null)
+    }
+  }
+
   function startEdit(n: Notice) {
     setTitle(n.title)
     setContent(n.content)
-    setImageUrls(n.image_urls && n.image_urls.length ? [...n.image_urls] : [""])
+    setImageUrls(n.image_urls?.length ? [...n.image_urls] : n.image_url ? [n.image_url] : [""])
     setEditingId(n.id)
     setShowForm(true)
   }
@@ -343,32 +378,13 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
               rows={4}
               className="flex w-full rounded-2xl border border-slate-200/70 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-900/40 px-4 py-3 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1e3a8a] dark:focus-visible:ring-[#14b8a6] resize-none text-slate-800 dark:text-slate-100"
             />
-            <div className="space-y-2">
-              {imageUrls.map((url, idx) => (
-                <div key={idx} className="flex items-center gap-2">
-                  <Input
-                    placeholder="Image URL (Optional)"
-                    value={url}
-                    onChange={(e) => {
-                      const next = [...imageUrls]
-                      next[idx] = e.target.value
-                      if (idx === imageUrls.length - 1 && e.target.value) next.push("")
-                      setImageUrls(next)
-                    }}
-                    className="rounded-full px-4 h-11 bg-slate-50/60 dark:bg-slate-900/40 border-slate-200/70 dark:border-slate-700 flex-1"
-                  />
-                  {idx > 0 && (
-                    <button
-                      onClick={() => setImageUrls(imageUrls.filter((_, i) => i !== idx))}
-                      className="shrink-0 h-9 w-9 flex items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30 text-red-500 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
-                      aria-label="Remove image"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
+            <ImageUploadField
+              images={imageUrls.filter(Boolean)}
+              uploadStage={uploadStage}
+              removingUrl={removingUrl}
+              onFiles={handleImageFiles}
+              onRemove={handleRemoveImage}
+            />
             <Button className="w-full rounded-full h-11" onClick={handleSubmit} disabled={editingId === null && (!title || !content)}>
               {editingId !== null ? "Update Notice" : "Publish Notice"}
             </Button>

@@ -8,6 +8,8 @@ import LazyImage from "@/components/ui/LazyImage"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import ImageLightbox from "@/components/ImageLightbox"
+import { deleteImage, uploadImages } from "@/lib/image-upload"
+import ImageUploadField from "@/components/ImageUploadField"
 import { Loader2, CalendarCheck, X } from "lucide-react"
 import { notifyNewContent } from "@/lib/notifications"
 import { toast } from "sonner"
@@ -18,6 +20,7 @@ interface RoutineRow {
   id: number
   day: string
   image_url: string
+  image_urls?: string[] | null
 }
 
 export default function RoutineTab({ isAdmin }: { isAdmin: boolean }) {
@@ -25,6 +28,8 @@ export default function RoutineTab({ isAdmin }: { isAdmin: boolean }) {
   const [loading, setLoading] = useState(true)
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null)
   const [urlInputs, setUrlInputs] = useState<Record<string, string>>({})
+  const [uploadStage, setUploadStage] = useState<"idle" | "compressing" | "uploading">("idle")
+  const [removingUrl, setRemovingUrl] = useState<string | null>(null)
   const [selectedCard, setSelectedCard] = useState<{ day: string; image_url: string } | null>(null)
   const [mounted, setMounted] = useState(false)
 
@@ -64,8 +69,14 @@ export default function RoutineTab({ isAdmin }: { isAdmin: boolean }) {
   async function updateImage(day: string) {
     const newUrl = urlInputs[day]
     if (!newUrl) return
-    const { error } = await getSupabase().from("routine").update({ image_url: newUrl }).eq("day", day)
-    if (error) return
+    const row = data.find((item) => item.day === day)
+    const currentUrls = row?.image_urls?.length ? row.image_urls : row?.image_url ? [row.image_url] : []
+    const urls = [...currentUrls, newUrl]
+    const { error } = await getSupabase().from("routine").update({ image_url: urls[0], image_urls: urls }).eq("day", day)
+    if (error) {
+      toast.error(error.message)
+      return
+    }
     await fetchRoutine()
     setUrlInputs((prev) => ({ ...prev, [day]: "" }))
     toast.success("Routine updated.")
@@ -74,6 +85,42 @@ export default function RoutineTab({ isAdmin }: { isAdmin: boolean }) {
       body: `${day} routine has been updated.`,
       type: "routine",
     })
+  }
+
+  async function handleImageFiles(day: string, files: File[]) {
+    setUploadStage("compressing")
+    try {
+      const urls = await uploadImages(files, setUploadStage)
+      const row = data.find((item) => item.day === day)
+      const currentUrls = row?.image_urls?.length ? row.image_urls : row?.image_url ? [row.image_url] : []
+      const nextUrls = [...currentUrls, ...urls]
+      const { error } = await getSupabase().from("routine").update({ image_url: nextUrls[0], image_urls: nextUrls }).eq("day", day)
+      if (error) throw error
+      await fetchRoutine()
+      toast.success(`${urls.length} image${urls.length === 1 ? "" : "s"} uploaded.`)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Image upload failed.")
+    } finally {
+      setUploadStage("idle")
+    }
+  }
+
+  async function handleRemoveImage(day: string, url: string) {
+    setRemovingUrl(url)
+    try {
+      await deleteImage(url)
+      const row = data.find((item) => item.day === day)
+      const currentUrls = row?.image_urls?.length ? row.image_urls : row?.image_url ? [row.image_url] : []
+      const nextUrls = currentUrls.filter((imageUrl) => imageUrl !== url)
+      const { error } = await getSupabase().from("routine").update({ image_url: nextUrls[0] ?? "", image_urls: nextUrls.length ? nextUrls : null }).eq("day", day)
+      if (error) throw error
+      await fetchRoutine()
+      toast.success("Image removed.")
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not remove image.")
+    } finally {
+      setRemovingUrl(null)
+    }
   }
 
   if (loading) {
@@ -88,15 +135,16 @@ export default function RoutineTab({ isAdmin }: { isAdmin: boolean }) {
     <div className="space-y-5">
       {DAYS.map((day, i) => {
         const row = data.find((r) => r.day === day)
+        const rowImages = row?.image_urls?.length ? row.image_urls : row?.image_url ? [row.image_url] : []
         return (
           <div
             key={day}
-            onClick={() => row?.image_url && setSelectedCard({ day, image_url: row.image_url })}
+            onClick={() => rowImages[0] && setSelectedCard({ day, image_url: rowImages[0] })}
             style={{ animationDelay: `${i * 60}ms` }}
             className="animate-fade-in-up"
           >
             <Card className={`rounded-2xl border border-slate-200 dark:border-slate-700 border-t-4 border-t-teal-500 shadow-lg dark:shadow-2xl dark:shadow-black/40 transition-all duration-300 bg-white dark:bg-slate-800 overflow-hidden group ${
-              row?.image_url ? "cursor-pointer" : ""
+              rowImages.length ? "cursor-pointer" : ""
             }`}>
               <div className="p-6 pb-4 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
@@ -112,11 +160,11 @@ export default function RoutineTab({ isAdmin }: { isAdmin: boolean }) {
                 </span>
               </div>
 
-              {row?.image_url ? (
+              {rowImages[0] ? (
                 <div className="px-3 pb-3">
                   <div className="relative overflow-hidden rounded-xl">
                     <LazyImage
-                      src={row.image_url}
+                      src={rowImages[0]}
                       alt={`${day} routine`}
                       width={1200}
                       height={800}
@@ -137,25 +185,30 @@ export default function RoutineTab({ isAdmin }: { isAdmin: boolean }) {
 
               {isAdmin && (
                 <div
-                  className="p-6 pt-4 flex gap-2"
+                  className="p-6 pt-4 flex flex-col sm:flex-row gap-2"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <Input
-                    placeholder="Paste new image URL..."
+                    placeholder="Paste image URL to add"
                     value={urlInputs[day] || ""}
-                    onChange={(e) =>
-                      setUrlInputs((prev) => ({ ...prev, [day]: e.target.value }))
-                    }
+                    onChange={(e) => setUrlInputs((prev) => ({ ...prev, [day]: e.target.value }))}
                     className="flex-1 rounded-full px-4 h-11 bg-slate-50/60 dark:bg-[#14151e] border-slate-200/70 dark:border-[#374151] text-sm"
                   />
                   <Button
                     size="sm"
                     onClick={() => updateImage(day)}
-                    disabled={!urlInputs[day]}
+                    disabled={!urlInputs[day] || uploadStage !== "idle"}
                     className="rounded-full px-5 h-11"
                   >
                     Update
                   </Button>
+                  <ImageUploadField
+                    images={rowImages}
+                    uploadStage={uploadStage}
+                    removingUrl={removingUrl}
+                    onFiles={(files) => void handleImageFiles(day, files)}
+                    onRemove={(url) => void handleRemoveImage(day, url)}
+                  />
                 </div>
               )}
             </Card>

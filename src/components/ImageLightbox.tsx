@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { createPortal } from "react-dom"
 import Image from "next/image"
 import { X } from "lucide-react"
+import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch"
 
 interface ImageLightboxProps {
   src: string
@@ -54,19 +55,29 @@ export default function ImageLightbox({ src, alt, open, onOpenChange }: ImageLig
         >
           <X className="h-5 w-5" />
         </button>
-        <div className="relative w-[95vw] md:max-w-4xl flex justify-center">
-          <Image
-            src={src}
-            alt={alt}
-            width={1200}
-            height={800}
-            sizes="(max-width: 768px) 95vw, 896px"
-            quality={90}
-            loading="eager"
-            decoding="async"
-            className="w-full h-auto max-h-[85vh] object-contain rounded-xl shadow-2xl"
-          />
-        </div>
+        <TransformWrapper
+          centerOnInit
+          initialScale={1}
+          minScale={1}
+          maxScale={4}
+        >
+          <TransformComponent
+            wrapperStyle={{ width: "95vw", maxWidth: "56rem", height: "85vh" }}
+            contentStyle={{ width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}
+          >
+            <Image
+              src={src}
+              alt={alt}
+              width={1200}
+              height={800}
+              sizes="(max-width: 768px) 95vw, 896px"
+              quality={90}
+              loading="eager"
+              decoding="async"
+              className="max-h-[85vh] w-full rounded-xl object-contain shadow-2xl"
+            />
+          </TransformComponent>
+        </TransformWrapper>
       </div>
     </>,
     document.body

@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react"
 import { createPortal } from "react-dom"
 import { getSupabase } from "@/lib/supabase"
+import { deleteImage, uploadImages } from "@/lib/image-upload"
+import ImageUploadField from "@/components/ImageUploadField"
 import { Card } from "@/components/ui/card"
 import LazyImage from "@/components/ui/LazyImage"
 import { Input } from "@/components/ui/input"
@@ -30,6 +32,8 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
   const [selectedCard, setSelectedCard] = useState<Assignment | null>(null)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
+  const [uploadStage, setUploadStage] = useState<"idle" | "compressing" | "uploading">("idle")
+  const [removingUrl, setRemovingUrl] = useState<string | null>(null)
 
   const draftKeys = { title: "draft_note_title", link: "draft_note_link", imageUrls: "draft_note_images" }
 
@@ -140,6 +144,37 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
     }
   }
 
+  async function handleImageFiles(files: File[]) {
+    setUploadStage("compressing")
+    try {
+      const urls = await uploadImages(files, setUploadStage)
+      setImageUrls((prev) => [...prev.filter(Boolean), ...urls])
+      toast.success(`${urls.length} image${urls.length === 1 ? "" : "s"} uploaded.`)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Image upload failed.")
+    } finally {
+      setUploadStage("idle")
+    }
+  }
+
+  async function handleRemoveImage(url: string) {
+    setRemovingUrl(url)
+    try {
+      await deleteImage(url)
+      const nextUrls = imageUrls.filter((imageUrl) => imageUrl !== url)
+      setImageUrls(nextUrls)
+      if (editingId !== null) {
+        const { error } = await getSupabase().from("assignments").update({ image_urls: nextUrls.length ? nextUrls : null }).eq("id", editingId)
+        if (error) throw error
+      }
+      toast.success("Image removed.")
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not remove image.")
+    } finally {
+      setRemovingUrl(null)
+    }
+  }
+
   function startEdit(a: Assignment) {
     setTitle(a.title || "")
     setLink(a.link || "")
@@ -210,33 +245,13 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
               onChange={(e) => setLink(e.target.value)}
               className="rounded-full px-4 h-11 bg-slate-50/60 border-slate-200/70"
             />
-            <div className="space-y-2">
-              {imageUrls.map((url, idx) => (
-                <div key={idx} className="flex items-center gap-2">
-                  <Input
-                    type="text"
-                    placeholder={`Image URL ${idx + 1}`}
-                    value={url}
-                    onChange={(e) => {
-                      const next = [...imageUrls]
-                      next[idx] = e.target.value
-                      if (idx === imageUrls.length - 1 && e.target.value) next.push("")
-                      setImageUrls(next)
-                    }}
-                    className="rounded-full px-4 h-11 bg-slate-50/60 border-slate-200/70 flex-1"
-                  />
-                  {idx > 0 && (
-                    <button
-                      onClick={() => setImageUrls(imageUrls.filter((_, i) => i !== idx))}
-                      className="shrink-0 h-9 w-9 flex items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30 text-red-500 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
-                      aria-label="Remove image"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
+            <ImageUploadField
+              images={imageUrls.filter(Boolean)}
+              uploadStage={uploadStage}
+              removingUrl={removingUrl}
+              onFiles={handleImageFiles}
+              onRemove={handleRemoveImage}
+            />
             <Button className="w-full rounded-full h-11" onClick={handleSubmit}>
               {editingId !== null ? "Update Note" : "Publish Note"}
             </Button>
