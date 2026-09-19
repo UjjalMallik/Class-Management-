@@ -7,9 +7,12 @@ const noCacheHeaders = [
   { key: "Surrogate-Control", value: "no-store" },
 ];
 
+const isCapacitorBuild = process.env.CAPACITOR_BUILD === "true";
+
 const nextConfig: NextConfig = {
-  output: process.env.CAPACITOR_BUILD === "true" ? "export" : undefined,
+  output: isCapacitorBuild ? "export" : undefined,
   images: {
+    unoptimized: isCapacitorBuild,
     remotePatterns: [
       { protocol: "https", hostname: "sykjcigvtlrujlbttohu.supabase.co" },
       { protocol: "https", hostname: "*.supabase.co" },

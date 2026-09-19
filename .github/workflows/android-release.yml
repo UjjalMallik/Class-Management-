@@ -35,14 +35,17 @@ jobs:
         run: npm ci
 
       - name: Build web app
+        env:
+          CAPACITOR_BUILD: true
         run: |
           echo "NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}" >> .env.production
           echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" >> .env.production
           echo "NEXT_PUBLIC_ADMIN_PIN=${{ secrets.NEXT_PUBLIC_ADMIN_PIN }}" >> .env.production
           echo "NEXT_PUBLIC_API_ORIGIN=${{ secrets.NEXT_PUBLIC_API_ORIGIN }}" >> .env.production
           mv src/app/api .capacitor-api-disabled
+          test ! -d src/app/api
           trap 'mv .capacitor-api-disabled src/app/api' EXIT
-          CAPACITOR_BUILD=true npm run build
+          npm run build
           test -d out
 
       - name: Sync Capacitor
