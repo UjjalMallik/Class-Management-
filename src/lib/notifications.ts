@@ -4,7 +4,7 @@ interface NotificationPayload {
   type: "routine" | "note" | "class_link" | "notice"
 }
 
-const apiOrigin = process.env.NEXT_PUBLIC_API_ORIGIN || ""
+const apiOrigin = process.env.NEXT_PUBLIC_API_ORIGIN
 
 export async function registerPushToken(token: string) {
   try {

@@ -51,6 +51,7 @@ jobs:
         run: |
           npm install -g @capacitor/cli
           npm install @capacitor/core @capacitor/android
+          echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > android/app/google-services.json
           npx cap sync android
 
       - name: Set up Java
