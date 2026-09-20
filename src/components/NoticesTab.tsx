@@ -257,12 +257,18 @@ export default function NoticesTab({ isAdmin }: { isAdmin: boolean }) {
         return
       }
       const snippet = content.length > 120 ? `${content.slice(0, 117)}...` : content
-      void notifyNewContent({
-        title: `New Notice Added! ${title}`,
-        body: snippet,
-        type: "notice",
-      })
-      toast.success("Notice published. Push notification sent to all students.")
+      try {
+        const result = await notifyNewContent({
+          title: `New Notice Added! ${title}`,
+          body: snippet,
+          type: "notice",
+        })
+        toast.success(`Notice published. Push sent to ${result.sent ?? 0} device(s).`)
+        if (result.failed) toast.error(`${result.failed} device notification(s) failed.`)
+      } catch (error) {
+        console.error("Notice push notification failed:", error)
+        toast.error(error instanceof Error ? `Notice published, but push failed: ${error.message}` : "Notice published, but push failed.")
+      }
     }
     clearDraft()
     resetForm()
