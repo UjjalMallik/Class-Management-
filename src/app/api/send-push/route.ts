@@ -4,6 +4,16 @@ import { getFirebaseMessaging } from "@/lib/firebase-admin"
 
 export const runtime = "nodejs"
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, x-admin-pin",
+}
+
+function jsonResponse(data: unknown, status = 200) {
+  return NextResponse.json(data, { status, headers: corsHeaders })
+}
+
 const allowedTypes = new Set(["routine", "note", "class_link", "notice"])
 
 type NotificationPayload = {
@@ -19,25 +29,29 @@ function getServerSupabase() {
   return createClient(url, serviceRoleKey, { auth: { persistSession: false } })
 }
 
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: corsHeaders })
+}
+
 function isAdmin(request: Request) {
   const configuredPin = process.env.ADMIN_PIN || process.env.NEXT_PUBLIC_ADMIN_PIN
   return Boolean(configuredPin && request.headers.get("x-admin-pin") === configuredPin)
 }
 
 export async function POST(request: Request) {
-  if (!isAdmin(request)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  if (!isAdmin(request)) return jsonResponse({ error: "Unauthorized" }, 401)
 
   try {
     const { title, body, type } = await request.json() as NotificationPayload
     if (!title || !body || !type || !allowedTypes.has(type)) {
-      return NextResponse.json({ error: "title, body, and a valid type are required" }, { status: 400 })
+      return jsonResponse({ error: "title, body, and a valid type are required" }, 400)
     }
 
     const { data, error } = await getServerSupabase().from("push_tokens").select("token")
     if (error) throw error
 
     const tokens = (data ?? []).map((row) => row.token as string).filter(Boolean)
-    if (tokens.length === 0) return NextResponse.json({ success: true, sent: 0, failed: 0 })
+    if (tokens.length === 0) return jsonResponse({ success: true, sent: 0, failed: 0 })
 
     let sent = 0
     let failed = 0
@@ -52,13 +66,13 @@ export async function POST(request: Request) {
       failed += response.failureCount
     }
 
-    return NextResponse.json({
+    return jsonResponse({
       success: true,
       sent,
       failed,
     })
   } catch (error) {
     console.error("Push notification failed:", error)
-    return NextResponse.json({ error: "Could not send push notification" }, { status: 500 })
+    return jsonResponse({ error: "Could not send push notification" }, 500)
   }
 }
