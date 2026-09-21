@@ -62,14 +62,24 @@ jobs:
           java-version: 21
           cache: gradle
 
-      - name: Build debug APK
+      - name: Decode release keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: printf '%s' "$KEYSTORE_BASE64" | base64 --decode > android/release.keystore
+
+      - name: Build release APK
         working-directory: android
+        env:
+          KEYSTORE_FILE: release.keystore
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleRelease
 
       - name: Rename APK
-        run: mv "android/app/build/outputs/apk/debug/app-debug.apk" "android/app/build/outputs/apk/debug/EUB 39B ${{ github.event.inputs.version_tag }}.apk"
+        run: mv "android/app/build/outputs/apk/release/app-release.apk" "android/app/build/outputs/apk/release/EUB 39B ${{ github.event.inputs.version_tag }}.apk"
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
@@ -77,5 +87,5 @@ jobs:
           tag_name: ${{ inputs.version_tag }}
           name: ${{ inputs.version_tag }}
           body: ${{ inputs.release_notes }}
-          files: android/app/build/outputs/apk/debug/EUB 39B ${{ github.event.inputs.version_tag }}.apk
+          files: android/app/build/outputs/apk/release/EUB 39B ${{ github.event.inputs.version_tag }}.apk
           fail_on_unmatched_files: true

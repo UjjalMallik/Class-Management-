@@ -28,7 +28,6 @@ export default function PushNotificationsProvider() {
 
       if (receivePermission !== "granted") {
         console.warn("Push notifications permission was not granted:", receivePermission)
-        toast.error(`Push notifications permission is ${receivePermission}.`)
         return
       }
 
@@ -39,15 +38,12 @@ export default function PushNotificationsProvider() {
       PushNotifications.addListener("registration", (token) => {
         console.info("Push registration token:", token.value)
         void registerPushToken(token.value)
-          .then(() => toast.success("Push notifications are connected."))
           .catch((error) => {
             console.error("Push token backend registration failed:", error)
-            toast.error(error instanceof Error ? error.message : "Could not save push token.")
           })
       }),
       PushNotifications.addListener("registrationError", (error) => {
         console.error("Push registration error:", error)
-        toast.error(`Push registration failed: ${error.error || "unknown error"}`)
       }),
       PushNotifications.addListener("pushNotificationReceived", (notification) => {
         console.info("Push notification received:", notification)
@@ -62,7 +58,6 @@ export default function PushNotificationsProvider() {
 
     void setupPushNotifications().catch((error) => {
       console.error("Push notification setup failed:", error)
-      toast.error(error instanceof Error ? error.message : "Push notification setup failed.")
     })
 
     return () => {

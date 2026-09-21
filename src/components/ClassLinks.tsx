@@ -99,16 +99,13 @@ export default function ClassLinks({ isAdmin }: { isAdmin: boolean }) {
     resetForm()
     await fetchLinks()
     try {
-      const result = await notifyNewContent({
+      await notifyNewContent({
         title: "New Class Link Added!",
         body: `${className || "Untitled"}: ${note || "অ্যাপে ঢুকে ক্লাসে যোগ দিন।"}`,
         type: "class_link",
       })
-      toast.success(`Class link published. Push sent to ${result.sent ?? 0} device(s).`)
-      if (result.failed) toast.error(`${result.failed} device notification(s) failed.`)
     } catch (error) {
       console.error("Class-link push notification failed:", error)
-      toast.error(error instanceof Error ? `Class link published, but push failed: ${error.message}` : "Class link published, but push failed.")
     }
   }
 

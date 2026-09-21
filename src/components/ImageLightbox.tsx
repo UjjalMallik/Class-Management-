@@ -6,6 +6,8 @@ import Image from "next/image"
 import { X } from "lucide-react"
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch"
 
+const loadedImageCache = new Set<string>()
+
 interface ImageLightboxProps {
   src: string
   alt: string
@@ -15,6 +17,7 @@ interface ImageLightboxProps {
 
 export default function ImageLightbox({ src, alt, open, onOpenChange }: ImageLightboxProps) {
   const [mounted, setMounted] = useState(false)
+  const [loadedSrc, setLoadedSrc] = useState<string | null>(null)
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -60,11 +63,21 @@ export default function ImageLightbox({ src, alt, open, onOpenChange }: ImageLig
           initialScale={1}
           minScale={1}
           maxScale={4}
+          doubleClick={{ mode: "zoomIn", step: 1.5 }}
+          pinch={{ disabled: false, step: 5 }}
+          wheel={{ disabled: false, step: 0.1 }}
         >
           <TransformComponent
             wrapperStyle={{ width: "95vw", maxWidth: "56rem", height: "85vh" }}
             contentStyle={{ width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}
           >
+            <div className="relative flex h-full w-full items-center justify-center">
+              {!(loadedSrc === src || loadedImageCache.has(src)) && (
+                <div
+                  aria-label="Loading image"
+                  className="absolute inset-8 animate-pulse rounded-xl bg-gradient-to-br from-white/10 via-white/25 to-white/10 blur-sm"
+                />
+              )}
             <Image
               src={src}
               alt={alt}
@@ -74,8 +87,14 @@ export default function ImageLightbox({ src, alt, open, onOpenChange }: ImageLig
               quality={90}
               loading="eager"
               decoding="async"
-              className="max-h-[85vh] w-full rounded-xl object-contain shadow-2xl"
+              unoptimized
+              onLoad={() => {
+                loadedImageCache.add(src)
+                setLoadedSrc(src)
+              }}
+              className={`max-h-[85vh] w-full rounded-xl object-contain shadow-2xl transition-opacity duration-300 ${loadedSrc === src || loadedImageCache.has(src) ? "opacity-100" : "opacity-0"}`}
             />
+            </div>
           </TransformComponent>
         </TransformWrapper>
       </div>

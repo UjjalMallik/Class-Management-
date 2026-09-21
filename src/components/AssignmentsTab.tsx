@@ -7,6 +7,7 @@ import { deleteImage, uploadImages } from "@/lib/image-upload"
 import ImageUploadField from "@/components/ImageUploadField"
 import { Card } from "@/components/ui/card"
 import LazyImage from "@/components/ui/LazyImage"
+import ImageLightbox from "@/components/ImageLightbox"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Loader2, ExternalLink, Plus, X, FileText, Pencil, Trash2 } from "lucide-react"
@@ -316,6 +317,8 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
                       <img
                         src={urls[0]}
                         alt=""
+                        loading="lazy"
+                        decoding="async"
                         onClick={(e) => { e.stopPropagation(); setSelectedImage(urls[0]) }}
                         className="w-full max-h-[280px] object-cover rounded-xl mt-3 mx-auto block border border-white/5 cursor-pointer"
                       />
@@ -328,6 +331,8 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
                           key={idx}
                           src={url}
                           alt=""
+                          loading="lazy"
+                          decoding="async"
                           onClick={(e) => { e.stopPropagation(); setSelectedImage(url) }}
                           className="w-[110px] h-[110px] object-cover rounded-xl border border-white/10 shadow-lg cursor-pointer transition-all duration-300 ease hover:scale-105 hover:opacity-90"
                         />
@@ -390,6 +395,8 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
                         key={idx}
                         src={url}
                         alt=""
+                        loading="lazy"
+                        decoding="async"
                         onClick={() => setSelectedImage(url)}
                         className="w-full max-h-[400px] object-contain rounded-xl cursor-pointer"
                       />
@@ -398,6 +405,8 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
                       <img
                         src={selectedCard.image_url}
                         alt=""
+                        loading="lazy"
+                        decoding="async"
                         onClick={() => setSelectedImage(selectedCard.image_url!)}
                         className="w-full max-h-[400px] object-contain rounded-xl cursor-pointer"
                       />
@@ -420,26 +429,15 @@ export default function AssignmentsTab({ isAdmin }: { isAdmin: boolean }) {
         document.body
       )}
 
-      {selectedImage && mounted && createPortal(
-        <div
-          onClick={() => setSelectedImage(null)}
-          className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center animate-fade-in-up"
-        >
-          <button
-            onClick={() => setSelectedImage(null)}
-            className="absolute top-4 right-4 z-[70] h-10 w-10 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 text-white backdrop-blur-md transition-colors"
-            aria-label="Close image"
-          >
-            <X className="h-5 w-5" />
-          </button>
-          <img
-            src={selectedImage}
-            alt=""
-            onClick={(e) => e.stopPropagation()}
-            className="max-w-[95vw] max-h-[95vh] object-contain rounded-lg shadow-2xl"
-          />
-        </div>,
-        document.body
+      {selectedImage && (
+        <ImageLightbox
+          src={selectedImage}
+          alt="Assignment image"
+          open={!!selectedImage}
+          onOpenChange={(open) => {
+            if (!open) setSelectedImage(null)
+          }}
+        />
       )}
     </div>
   )
