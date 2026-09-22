@@ -1,10 +1,10 @@
 "use client"
 
 import { Moon, Sun, ShieldCheck, Eye, EyeOff, X, AlertCircle, Calendar, Clock, Globe, Menu, ExternalLink, Info, MessageSquare, Send, Loader2, Download, Sparkles, CheckCircle2 } from "lucide-react"
+import { App } from "@capacitor/app"
 import { useTheme } from "next-themes"
 import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
-import packageJson from "../../package.json"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
 import LazyImage from "@/components/ui/LazyImage"
@@ -31,7 +31,6 @@ declare global {
 }
 
 const ADMIN_STORAGE_KEY = "eub39_admin_unlocked"
-const appVersion = normalizeVersion(String(packageJson.version))
 const latestReleaseApiUrl = "https://api.github.com/repos/UjjalMallik/Class-Management-/releases/latest"
 
 interface GitHubRelease {
@@ -94,6 +93,7 @@ export default function Header({ view, onViewChange }: HeaderProps) {
   const [feedback, setFeedback] = useState("")
   const [feedbackSending, setFeedbackSending] = useState(false)
   const [aboutModalOpen, setAboutModalOpen] = useState(false)
+  const [appVersion, setAppVersion] = useState<string | null>(null)
   const [latestRelease, setLatestRelease] = useState<GitHubRelease | null>(null)
   const [updateStatus, setUpdateStatus] = useState<"checking" | "up-to-date" | "update-available" | "unavailable">("checking")
   const [downloadStarting, setDownloadStarting] = useState(false)
@@ -129,12 +129,23 @@ export default function Header({ view, onViewChange }: HeaderProps) {
 
     let cancelled = false
     // eslint-disable-next-line react-hooks/set-state-in-effect
+    setAppVersion(null)
     setLatestRelease(null)
     setUpdateStatus("checking")
     setDownloadStarting(false)
 
-    async function fetchLatestRelease() {
+    async function fetchVersionAndLatestRelease() {
       try {
+        const info = await App.getInfo()
+        const nativeVersion = normalizeVersion(info.version)
+        if (!nativeVersion) {
+          throw new Error("Native app version was empty")
+        }
+
+        if (cancelled) return
+
+        setAppVersion(nativeVersion)
+
         const response = await fetch(latestReleaseApiUrl, {
           headers: { Accept: "application/vnd.github+json" },
           cache: "no-store",
@@ -158,7 +169,7 @@ export default function Header({ view, onViewChange }: HeaderProps) {
         if (cancelled) return
 
         const normalizedLatestVersion = normalizeVersion(release.tag_name)
-        if (isNewerVersion(normalizedLatestVersion, appVersion) && release.html_url) {
+        if (isNewerVersion(normalizedLatestVersion, nativeVersion) && release.html_url) {
           setLatestRelease(release as GitHubRelease)
           setUpdateStatus("update-available")
         } else {
@@ -174,7 +185,7 @@ export default function Header({ view, onViewChange }: HeaderProps) {
       }
     }
 
-    void fetchLatestRelease()
+    void fetchVersionAndLatestRelease()
 
     return () => {
       cancelled = true
@@ -719,7 +730,7 @@ export default function Header({ view, onViewChange }: HeaderProps) {
                     <div className="flex items-center justify-between gap-4">
                       <div>
                         <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">CURRENT INSTALLED VERSION</p>
-                        <p className="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">v{appVersion}</p>
+                        <p className="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">{appVersion ? `v${appVersion}` : "Reading native version..."}</p>
                       </div>
                       <a
                         href="https://github.com/UjjalMallik/Class-Management-"
