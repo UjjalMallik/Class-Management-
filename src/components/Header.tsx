@@ -1,6 +1,6 @@
 "use client"
 
-import { Moon, Sun, ShieldCheck, Eye, EyeOff, X, AlertCircle, Calendar, Clock, Globe, Menu, ExternalLink, Info, MessageSquare, Send, Loader2 } from "lucide-react"
+import { Moon, Sun, ShieldCheck, Eye, EyeOff, X, AlertCircle, Calendar, Clock, Globe, Menu, ExternalLink, Info, MessageSquare, Send, Loader2, Download, Sparkles, CheckCircle2 } from "lucide-react"
 import { useTheme } from "next-themes"
 import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
@@ -31,7 +31,39 @@ declare global {
 }
 
 const ADMIN_STORAGE_KEY = "eub39_admin_unlocked"
-const appVersion = packageJson.version
+const appVersion = String(packageJson.version).trim()
+const latestReleaseApiUrl = "https://api.github.com/repos/UjjalMallik/Class-Management-/releases/latest"
+
+interface GitHubRelease {
+  tag_name: string
+  html_url: string
+  assets?: Array<{
+    name: string
+    browser_download_url: string
+  }>
+}
+
+function normalizeVersion(version: string): string {
+  return version.trim().replace(/^v/i, "")
+}
+
+function versionParts(version: string): number[] {
+  return normalizeVersion(version).split(".").map((part) => Number.parseInt(part, 10) || 0)
+}
+
+function isNewerVersion(latestVersion: string, currentVersion: string): boolean {
+  const latest = versionParts(latestVersion)
+  const current = versionParts(currentVersion)
+  const length = Math.max(latest.length, current.length)
+
+  for (let index = 0; index < length; index += 1) {
+    if ((latest[index] ?? 0) !== (current[index] ?? 0)) {
+      return (latest[index] ?? 0) > (current[index] ?? 0)
+    }
+  }
+
+  return false
+}
 
 function formatDate(d: Date): string {
   const weekday = d.toLocaleDateString("en-US", { weekday: "short" })
@@ -62,6 +94,9 @@ export default function Header({ view, onViewChange }: HeaderProps) {
   const [feedback, setFeedback] = useState("")
   const [feedbackSending, setFeedbackSending] = useState(false)
   const [aboutModalOpen, setAboutModalOpen] = useState(false)
+  const [latestRelease, setLatestRelease] = useState<GitHubRelease | null>(null)
+  const [updateStatus, setUpdateStatus] = useState<"checking" | "up-to-date" | "update-available">("checking")
+  const [downloadStarting, setDownloadStarting] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -88,6 +123,63 @@ export default function Header({ view, onViewChange }: HeaderProps) {
       return () => clearTimeout(t)
     }
   }, [pinModalOpen])
+
+  useEffect(() => {
+    if (!aboutModalOpen) return
+
+    let cancelled = false
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLatestRelease(null)
+    setUpdateStatus("checking")
+    setDownloadStarting(false)
+
+    fetch(latestReleaseApiUrl, {
+      headers: { Accept: "application/vnd.github+json" },
+      cache: "no-store",
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Unable to check for updates")
+        return response.json() as Promise<GitHubRelease>
+      })
+      .then((release) => {
+        if (cancelled) return
+
+        if (!release.tag_name) {
+          setUpdateStatus("up-to-date")
+          return
+        }
+
+        if (isNewerVersion(release.tag_name, appVersion) && release.html_url) {
+          setLatestRelease(release)
+          setUpdateStatus("update-available")
+        } else {
+          setUpdateStatus("up-to-date")
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setUpdateStatus("up-to-date")
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [aboutModalOpen])
+
+  function startApkDownload() {
+    const apkUrl = latestRelease?.assets?.find((asset) => asset.name.toLowerCase().endsWith(".apk"))?.browser_download_url
+    if (!apkUrl || downloadStarting) return
+
+    setDownloadStarting(true)
+    if (window.cordova?.InAppBrowser) {
+      window.cordova.InAppBrowser.open(apkUrl, "_system", "location=no,zoom=no")
+    } else {
+      window.open(apkUrl, "_system", "noopener,noreferrer")
+    }
+
+    window.setTimeout(() => setDownloadStarting(false), 2500)
+  }
 
   useEffect(() => {
     if (!pinError) return
@@ -564,53 +656,114 @@ export default function Header({ view, onViewChange }: HeaderProps) {
         <DialogPortal>
           <div
             aria-hidden
-            className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-md"
+            className="fixed inset-0 z-50 bg-slate-950/65 backdrop-blur-xl"
           />
           <div className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2">
-            <div className="relative overflow-hidden rounded-3xl border border-slate-200/70 bg-white shadow-2xl dark:border-slate-700/70 dark:bg-slate-900">
-              <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-br from-[#1e3a8a] via-[#2563eb] to-teal-500 dark:from-slate-950 dark:via-[#123b57] dark:to-teal-600" />
-              <div className="absolute -right-10 -top-16 h-40 w-40 rounded-full border-[18px] border-white/10" />
+            <div className="about-glass-modal relative overflow-hidden rounded-[2rem] border border-white/30 shadow-2xl dark:border-white/10">
+              <div className="absolute inset-x-0 top-0 h-36 bg-gradient-to-br from-[#123c8c] via-[#1769aa] to-[#18a999]" />
+              <div className="absolute -right-10 -top-16 h-40 w-40 rounded-full border-[18px] border-white/15" />
+              <div className="absolute left-8 top-24 h-24 w-24 rounded-full bg-cyan-300/15 blur-2xl" />
               <button
                 type="button"
                 onClick={() => setAboutModalOpen(false)}
-                className="absolute right-4 top-4 z-10 rounded-full bg-black/15 p-2 text-white transition-colors hover:bg-black/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
+                className="absolute right-4 top-4 z-10 rounded-full bg-white/15 p-2 text-white backdrop-blur-md transition-colors hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
                 aria-label="Close About dialog"
               >
                 <X className="h-4 w-4" />
               </button>
 
               <div className="relative px-6 pb-6 pt-7 sm:px-8">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/30 bg-white/15 text-white shadow-lg backdrop-blur-sm">
-                  <Info className="h-7 w-7" strokeWidth={2.2} />
+                <div className="flex h-16 w-16 items-center justify-center rounded-[1.35rem] border border-white/35 bg-white/20 text-white shadow-lg backdrop-blur-md">
+                  <Sparkles className="h-7 w-7" strokeWidth={2.2} />
                 </div>
-                <DialogTitle className="mt-5 text-xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-2xl">
-                  EUB 39B - Class Management App
+                <DialogTitle className="about-gradient-title mt-5 text-2xl font-extrabold tracking-tight sm:text-3xl">
+                  EUB 39B
                 </DialogTitle>
                 <DialogDescription className="mt-1 max-w-sm text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-                  A focused space for keeping class routines, notices, links, and study updates together.
+                  Class Management App
                 </DialogDescription>
+                <p className="mt-3 inline-flex animate-pulse bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 bg-clip-text text-xs font-bold tracking-wide text-transparent">
+                  Exclusively crafted for EUB 39B Batch
+                </p>
 
-                <div className="mt-6 divide-y divide-slate-200/80 overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-50/70 dark:divide-slate-700/70 dark:border-slate-700/80 dark:bg-slate-800/50">
-                  <div className="px-4 py-3.5">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">Developer</p>
-                    <p className="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">Developed and Maintained by <span className="text-teal-600 dark:text-teal-300">Ujjal Mallik</span></p>
+                <div className="about-glass-panel mt-6 overflow-hidden rounded-2xl border border-white/50 dark:border-white/10">
+                  <div className="px-4 py-4">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Developer</p>
+                    <p className="mt-1.5 text-sm font-semibold text-slate-800 dark:text-slate-100">
+                      Developed and Maintained by{" "}
+                      <a
+                        href="https://www.facebook.com/share/yourujjal/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-teal-700 underline decoration-transparent underline-offset-4 transition-colors duration-200 hover:text-teal-500 hover:decoration-teal-500 focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/60 dark:text-teal-300 dark:hover:text-teal-200 dark:hover:decoration-teal-200"
+                      >
+                        Ujjal Mallik
+                      </a>
+                    </p>
                   </div>
-                  <div className="flex items-center justify-between gap-4 px-4 py-3.5">
-                    <div>
-                      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">Version</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">{appVersion}</p>
+                  <div className="border-t border-white/50 px-4 py-4 dark:border-white/10">
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">CURRENT INSTALLED VERSION</p>
+                        <p className="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">v{appVersion}</p>
+                      </div>
+                      <a
+                        href="https://github.com/UjjalMallik/Class-Management-"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex h-10 items-center gap-2 rounded-xl bg-slate-900 px-3.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+                      >
+                        GitHub
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </a>
                     </div>
-                    <a
-                      href="https://github.com/UjjalMallik/Class-Management-"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex h-10 items-center gap-2 rounded-xl bg-slate-900 px-3.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
-                    >
-                      GitHub
-                      <ExternalLink className="h-3.5 w-3.5" />
-                    </a>
+                    <div className="mt-4 border-t border-white/40 pt-4 dark:border-white/10">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">LATEST AVAILABLE VERSION</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">
+                        {latestRelease ? `v${normalizeVersion(latestRelease.tag_name)}` : updateStatus === "checking" ? "Checking..." : "Unavailable"}
+                      </p>
+                    </div>
                   </div>
                 </div>
+
+                {updateStatus === "update-available" && latestRelease && (
+                  <button
+                    type="button"
+                    onClick={startApkDownload}
+                    disabled={downloadStarting}
+                    className="update-pulse mt-4 flex w-full items-center justify-between gap-3 rounded-2xl border border-cyan-300/50 bg-cyan-500 px-4 py-3.5 text-left text-white shadow-lg shadow-cyan-500/25 transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 disabled:cursor-wait disabled:opacity-80"
+                  >
+                    <span className="flex items-center gap-2.5 text-sm font-bold">
+                      <Download className={`h-4 w-4 ${downloadStarting ? "animate-bounce" : ""}`} />
+                      {downloadStarting ? "Starting Download..." : "Download & Update Now"}
+                    </span>
+                    <span className="text-xs font-semibold text-cyan-50">v{normalizeVersion(latestRelease.tag_name)}</span>
+                  </button>
+                )}
+
+                {updateStatus === "checking" && (
+                  <div
+                    className="mt-4 flex items-center gap-3 rounded-2xl border border-slate-300/60 bg-white/35 px-4 py-3.5 text-slate-600 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-slate-300"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-cyan-500" />
+                    <span className="text-sm font-semibold">Checking for updates...</span>
+                  </div>
+                )}
+
+                {updateStatus === "up-to-date" && !latestRelease && (
+                  <div
+                    className="mt-4 flex items-center gap-3 rounded-2xl border border-emerald-300/50 bg-emerald-500/10 px-4 py-3.5 text-emerald-800 shadow-sm dark:border-emerald-400/25 dark:bg-emerald-400/10 dark:text-emerald-200"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 dark:bg-emerald-400/15">
+                      <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
+                    </span>
+                    <span className="text-sm font-semibold">You are on the latest version</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
