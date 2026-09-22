@@ -1,10 +1,11 @@
 {
   "name": "class-mgmt",
-  "version": "0.1.0",
+  "version": "1.0.4",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "sync:android-version": "node scripts/sync-android-version.cjs",
     "start": "next start",
     "lint": "eslint"
   },
