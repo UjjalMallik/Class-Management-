@@ -31,7 +31,7 @@ declare global {
 }
 
 const ADMIN_STORAGE_KEY = "eub39_admin_unlocked"
-const appVersion = String(packageJson.version).trim()
+const appVersion = normalizeVersion(String(packageJson.version))
 const latestReleaseApiUrl = "https://api.github.com/repos/UjjalMallik/Class-Management-/releases/latest"
 
 interface GitHubRelease {
@@ -95,7 +95,7 @@ export default function Header({ view, onViewChange }: HeaderProps) {
   const [feedbackSending, setFeedbackSending] = useState(false)
   const [aboutModalOpen, setAboutModalOpen] = useState(false)
   const [latestRelease, setLatestRelease] = useState<GitHubRelease | null>(null)
-  const [updateStatus, setUpdateStatus] = useState<"checking" | "up-to-date" | "update-available">("checking")
+  const [updateStatus, setUpdateStatus] = useState<"checking" | "up-to-date" | "update-available" | "unavailable">("checking")
   const [downloadStarting, setDownloadStarting] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -133,34 +133,48 @@ export default function Header({ view, onViewChange }: HeaderProps) {
     setUpdateStatus("checking")
     setDownloadStarting(false)
 
-    fetch(latestReleaseApiUrl, {
-      headers: { Accept: "application/vnd.github+json" },
-      cache: "no-store",
-    })
-      .then(async (response) => {
-        if (!response.ok) throw new Error("Unable to check for updates")
-        return response.json() as Promise<GitHubRelease>
-      })
-      .then((release) => {
+    async function fetchLatestRelease() {
+      try {
+        const response = await fetch(latestReleaseApiUrl, {
+          headers: { Accept: "application/vnd.github+json" },
+          cache: "no-store",
+        })
+        const responseText = await response.text()
+        let release: Partial<GitHubRelease> & { message?: string }
+
+        try {
+          release = JSON.parse(responseText) as Partial<GitHubRelease> & { message?: string }
+        } catch (parseError) {
+          throw new Error(`GitHub returned invalid JSON (${response.status})`, { cause: parseError })
+        }
+
+        if (!response.ok) {
+          throw new Error(`GitHub API ${response.status}: ${release.message || response.statusText}`)
+        }
+        if (!release.tag_name) {
+          throw new Error("GitHub latest release response did not include tag_name")
+        }
+
         if (cancelled) return
 
-        if (!release.tag_name) {
-          setUpdateStatus("up-to-date")
-          return
-        }
-
-        if (isNewerVersion(release.tag_name, appVersion) && release.html_url) {
-          setLatestRelease(release)
+        const normalizedLatestVersion = normalizeVersion(release.tag_name)
+        if (isNewerVersion(normalizedLatestVersion, appVersion) && release.html_url) {
+          setLatestRelease(release as GitHubRelease)
           setUpdateStatus("update-available")
         } else {
+          setLatestRelease(release as GitHubRelease)
           setUpdateStatus("up-to-date")
         }
-      })
-      .catch(() => {
+      } catch (error) {
+        console.error("Unable to check for GitHub updates:", error)
         if (!cancelled) {
-          setUpdateStatus("up-to-date")
+          setLatestRelease(null)
+          setUpdateStatus("unavailable")
         }
-      })
+      }
+    }
+
+    void fetchLatestRelease()
 
     return () => {
       cancelled = true
@@ -752,7 +766,7 @@ export default function Header({ view, onViewChange }: HeaderProps) {
                   </div>
                 )}
 
-                {updateStatus === "up-to-date" && !latestRelease && (
+                {updateStatus === "up-to-date" && latestRelease && (
                   <div
                     className="mt-4 flex items-center gap-3 rounded-2xl border border-emerald-300/50 bg-emerald-500/10 px-4 py-3.5 text-emerald-800 shadow-sm dark:border-emerald-400/25 dark:bg-emerald-400/10 dark:text-emerald-200"
                     role="status"
@@ -762,6 +776,17 @@ export default function Header({ view, onViewChange }: HeaderProps) {
                       <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
                     </span>
                     <span className="text-sm font-semibold">You are on the latest version</span>
+                  </div>
+                )}
+
+                {updateStatus === "unavailable" && (
+                  <div
+                    className="mt-4 flex items-center gap-3 rounded-2xl border border-slate-300/70 bg-slate-500/10 px-4 py-3.5 text-slate-600 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-slate-300"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-500/15 text-sm dark:bg-white/10">?</span>
+                    <span className="text-sm font-semibold">Unable to check for updates</span>
                   </div>
                 )}
               </div>
