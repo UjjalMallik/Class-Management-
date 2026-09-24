@@ -1,7 +1,6 @@
 "use client"
 
-import { Moon, Sun, ShieldCheck, Eye, EyeOff, X, AlertCircle, Calendar, Clock, Globe, Menu, ExternalLink, Info, MessageSquare, Send, Loader2, Download, Sparkles, CheckCircle2 } from "lucide-react"
-import { App } from "@capacitor/app"
+import { Moon, Sun, ShieldCheck, Eye, EyeOff, X, AlertCircle, Calendar, Clock, Globe, Menu, ExternalLink, Info, MessageSquare, Send, Loader2, Sparkles } from "lucide-react"
 import { useTheme } from "next-themes"
 import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
@@ -31,39 +30,6 @@ declare global {
 }
 
 const ADMIN_STORAGE_KEY = "eub39_admin_unlocked"
-const latestReleaseApiUrl = "https://api.github.com/repos/UjjalMallik/Class-Management-/releases/latest"
-
-interface GitHubRelease {
-  tag_name: string
-  html_url: string
-  assets?: Array<{
-    name: string
-    browser_download_url: string
-  }>
-}
-
-function normalizeVersion(version: string): string {
-  return version.trim().replace(/^v/i, "")
-}
-
-function versionParts(version: string): number[] {
-  return normalizeVersion(version).split(".").map((part) => Number.parseInt(part, 10) || 0)
-}
-
-function isNewerVersion(latestVersion: string, currentVersion: string): boolean {
-  const latest = versionParts(latestVersion)
-  const current = versionParts(currentVersion)
-  const length = Math.max(latest.length, current.length)
-
-  for (let index = 0; index < length; index += 1) {
-    if ((latest[index] ?? 0) !== (current[index] ?? 0)) {
-      return (latest[index] ?? 0) > (current[index] ?? 0)
-    }
-  }
-
-  return false
-}
-
 function formatDate(d: Date): string {
   const weekday = d.toLocaleDateString("en-US", { weekday: "short" })
   const monthDay = d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
@@ -93,10 +59,6 @@ export default function Header({ view, onViewChange }: HeaderProps) {
   const [feedback, setFeedback] = useState("")
   const [feedbackSending, setFeedbackSending] = useState(false)
   const [aboutModalOpen, setAboutModalOpen] = useState(false)
-  const [appVersion, setAppVersion] = useState<string | null>(null)
-  const [latestRelease, setLatestRelease] = useState<GitHubRelease | null>(null)
-  const [updateStatus, setUpdateStatus] = useState<"checking" | "up-to-date" | "update-available" | "unavailable">("checking")
-  const [downloadStarting, setDownloadStarting] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -123,88 +85,6 @@ export default function Header({ view, onViewChange }: HeaderProps) {
       return () => clearTimeout(t)
     }
   }, [pinModalOpen])
-
-  useEffect(() => {
-    if (!aboutModalOpen) return
-
-    let cancelled = false
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setAppVersion(null)
-    setLatestRelease(null)
-    setUpdateStatus("checking")
-    setDownloadStarting(false)
-
-    async function fetchVersionAndLatestRelease() {
-      try {
-        const info = await App.getInfo()
-        const nativeVersion = normalizeVersion(info.version)
-        if (!nativeVersion) {
-          throw new Error("Native app version was empty")
-        }
-
-        if (cancelled) return
-
-        setAppVersion(nativeVersion)
-
-        const response = await fetch(latestReleaseApiUrl, {
-          headers: { Accept: "application/vnd.github+json" },
-          cache: "no-store",
-        })
-        const responseText = await response.text()
-        let release: Partial<GitHubRelease> & { message?: string }
-
-        try {
-          release = JSON.parse(responseText) as Partial<GitHubRelease> & { message?: string }
-        } catch (parseError) {
-          throw new Error(`GitHub returned invalid JSON (${response.status})`, { cause: parseError })
-        }
-
-        if (!response.ok) {
-          throw new Error(`GitHub API ${response.status}: ${release.message || response.statusText}`)
-        }
-        if (!release.tag_name) {
-          throw new Error("GitHub latest release response did not include tag_name")
-        }
-
-        if (cancelled) return
-
-        const normalizedLatestVersion = normalizeVersion(release.tag_name)
-        if (isNewerVersion(normalizedLatestVersion, nativeVersion) && release.html_url) {
-          setLatestRelease(release as GitHubRelease)
-          setUpdateStatus("update-available")
-        } else {
-          setLatestRelease(release as GitHubRelease)
-          setUpdateStatus("up-to-date")
-        }
-      } catch (error) {
-        console.error("Unable to check for GitHub updates:", error)
-        if (!cancelled) {
-          setLatestRelease(null)
-          setUpdateStatus("unavailable")
-        }
-      }
-    }
-
-    void fetchVersionAndLatestRelease()
-
-    return () => {
-      cancelled = true
-    }
-  }, [aboutModalOpen])
-
-  function startApkDownload() {
-    const apkUrl = latestRelease?.assets?.find((asset) => asset.name.toLowerCase().endsWith(".apk"))?.browser_download_url
-    if (!apkUrl || downloadStarting) return
-
-    setDownloadStarting(true)
-    if (window.cordova?.InAppBrowser) {
-      window.cordova.InAppBrowser.open(apkUrl, "_system", "location=no,zoom=no")
-    } else {
-      window.open(apkUrl, "_system", "noopener,noreferrer")
-    }
-
-    window.setTimeout(() => setDownloadStarting(false), 2500)
-  }
 
   useEffect(() => {
     if (!pinError) return
@@ -726,80 +606,17 @@ export default function Header({ view, onViewChange }: HeaderProps) {
                       </a>
                     </p>
                   </div>
-                  <div className="border-t border-white/50 px-4 py-4 dark:border-white/10">
-                    <div className="flex items-center justify-between gap-4">
-                      <div>
-                        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">CURRENT INSTALLED VERSION</p>
-                        <p className="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">{appVersion ? `v${appVersion}` : "Reading native version..."}</p>
-                      </div>
-                      <a
-                        href="https://github.com/UjjalMallik/Class-Management-"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex h-10 items-center gap-2 rounded-xl bg-slate-900 px-3.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
-                      >
-                        GitHub
-                        <ExternalLink className="h-3.5 w-3.5" />
-                      </a>
-                    </div>
-                    <div className="mt-4 border-t border-white/40 pt-4 dark:border-white/10">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">LATEST AVAILABLE VERSION</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">
-                        {latestRelease ? `v${normalizeVersion(latestRelease.tag_name)}` : updateStatus === "checking" ? "Checking..." : "Unavailable"}
-                      </p>
-                    </div>
-                  </div>
                 </div>
 
-                {updateStatus === "update-available" && latestRelease && (
-                  <button
-                    type="button"
-                    onClick={startApkDownload}
-                    disabled={downloadStarting}
-                    className="update-pulse mt-4 flex w-full items-center justify-between gap-3 rounded-2xl border border-cyan-300/50 bg-cyan-500 px-4 py-3.5 text-left text-white shadow-lg shadow-cyan-500/25 transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 disabled:cursor-wait disabled:opacity-80"
-                  >
-                    <span className="flex items-center gap-2.5 text-sm font-bold">
-                      <Download className={`h-4 w-4 ${downloadStarting ? "animate-bounce" : ""}`} />
-                      {downloadStarting ? "Starting Download..." : "Download & Update Now"}
-                    </span>
-                    <span className="text-xs font-semibold text-cyan-50">v{normalizeVersion(latestRelease.tag_name)}</span>
-                  </button>
-                )}
-
-                {updateStatus === "checking" && (
-                  <div
-                    className="mt-4 flex items-center gap-3 rounded-2xl border border-slate-300/60 bg-white/35 px-4 py-3.5 text-slate-600 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-slate-300"
-                    role="status"
-                    aria-live="polite"
-                  >
-                    <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-cyan-500" />
-                    <span className="text-sm font-semibold">Checking for updates...</span>
-                  </div>
-                )}
-
-                {updateStatus === "up-to-date" && latestRelease && (
-                  <div
-                    className="mt-4 flex items-center gap-3 rounded-2xl border border-emerald-300/50 bg-emerald-500/10 px-4 py-3.5 text-emerald-800 shadow-sm dark:border-emerald-400/25 dark:bg-emerald-400/10 dark:text-emerald-200"
-                    role="status"
-                    aria-live="polite"
-                  >
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 dark:bg-emerald-400/15">
-                      <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
-                    </span>
-                    <span className="text-sm font-semibold">You are on the latest version</span>
-                  </div>
-                )}
-
-                {updateStatus === "unavailable" && (
-                  <div
-                    className="mt-4 flex items-center gap-3 rounded-2xl border border-slate-300/70 bg-slate-500/10 px-4 py-3.5 text-slate-600 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-slate-300"
-                    role="status"
-                    aria-live="polite"
-                  >
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-500/15 text-sm dark:bg-white/10">?</span>
-                    <span className="text-sm font-semibold">Unable to check for updates</span>
-                  </div>
-                )}
+                <a
+                  href="https://github.com/UjjalMallik/Class-Management-"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-3.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+                >
+                  GitHub
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </a>
               </div>
             </div>
           </div>
